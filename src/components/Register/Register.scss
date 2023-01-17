@@ -1,0 +1,48 @@
+#register-container {
+    display: flex;
+    max-width: 770px;
+    justify-content: center;
+    flex-direction: column;
+    padding: 32px 64px;
+    margin: 0 auto;
+    border-radius: 12px;
+    background: #ffff;
+
+    .register-deck {
+        display: grid;
+        gap: 30px;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        justify-content: center;
+        justify-items: center;
+    }
+
+    .register-card {
+        width: 100%;
+        user-select: none;
+        height: 180px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        border-radius: 0.5rem;
+        align-items: center;
+        transition: 0.5s linear;
+        cursor: pointer;
+        color: black;
+        background: #e1faec;
+
+        span {
+            margin-top: 24px;
+            font-weight: 600;
+        }
+
+        &:hover {
+            background: #c6d3cb;
+        }
+    }
+
+    h1 {
+        font-size: 1.8rem;
+        color: #000000;
+        text-align: center;
+    }
+}

@@ -1,5 +1,6 @@
 #home-container {
     display: flex;
+    max-width: 1440px;
     justify-content: center;
     height: calc(100vh - 100px);
     gap: 0 64px;
@@ -23,7 +24,7 @@
     }
 
     .clean-world {
-        padding-top: 42px;
+        padding: 42px 64px;
         max-width: 550px;
         max-height: 700px;
     }
