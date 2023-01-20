@@ -40,6 +40,10 @@
         }
     }
 
+    *:not(input) {
+        user-select: none;
+    }
+
     h1 {
         font-size: 1.8rem;
         color: #000000;
