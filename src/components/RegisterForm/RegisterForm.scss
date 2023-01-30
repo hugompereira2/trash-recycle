@@ -4,13 +4,6 @@
     justify-content: center;
     flex-direction: column;
 
-    .row {
-        display: flex;
-        gap: 0 24px;
-        margin: 24px 0;
-        user-select: none;
-    }
-
     .col {
         display: flex;
         flex-direction: column;

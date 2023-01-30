@@ -119,14 +119,6 @@ const RegisterForm = (props: IRegister) => {
             cnpj_cpf: '',
             email: '',
             whatsapp: '',
-            address: {
-                cep: '',
-                logradouro: '',
-                estado: '',
-                cidade: '',
-                bairro: '',
-                numero: '',
-            },
         });
 
     }, [props.type])
@@ -163,7 +155,7 @@ const RegisterForm = (props: IRegister) => {
             <div className="row">
                 <div className="input-group">
                     <label className="label-title">CEP</label>
-                    <InputMask mask={"99999-999"} defaultValue="______" {...register('address.cep', { required: true })} type="text" className="input-text" onChange={handleSearchCep} />
+                    <InputMask mask={"99999-999"} defaultValue="" {...register('address.cep', { required: true })} type="text" className="input-text" onChange={handleSearchCep} />
                     {errors.address?.cep && <span className="error-message">Campo obrigatório</span>}
                 </div>
                 <div className="input-group">

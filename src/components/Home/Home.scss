@@ -2,16 +2,16 @@
     display: flex;
     max-width: 1440px;
     justify-content: center;
-    height: calc(100vh - 100px);
+    min-height: calc(100vh - 164px);
     gap: 0 64px;
-    padding: 0 64px;
+    padding: 32px 64px;
     margin: 0 auto;
 
     .home {
         display: flex;
         align-items: center;
         flex-direction: column;
-        height: calc(100vh - 100px);
+        height: calc(100vh - 164px);
         padding: 0 64px;
         margin: 0 auto;
 
@@ -24,7 +24,7 @@
     }
 
     .clean-world {
-        padding: 42px 64px;
+        padding: 0 64px;
         max-width: 550px;
         max-height: 700px;
     }

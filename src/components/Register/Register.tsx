@@ -57,18 +57,20 @@ const Register = () => {
     return (
         <>
             <div id="register-container">
-                <h1>Eu sou ?</h1>
-                <div className="register-deck">
-                    <div className="register-card" onClick={() => setType("PJ")}>
-                        <FaRegBuilding size={50} />
-                        <span>Uma Empresa</span>
+                <div className="register">
+                    <h1>Eu sou ?</h1>
+                    <div className="register-deck">
+                        <div className="register-card" onClick={() => setType("PJ")}>
+                            <FaRegBuilding size={50} />
+                            <span>Uma Empresa</span>
+                        </div>
+                        <div className="register-card" onClick={() => setType("PF")}>
+                            <IoBodyOutline size={50} />
+                            <span>Uma Pessoa</span>
+                        </div>
                     </div>
-                    <div className="register-card" onClick={() => setType("PF")}>
-                        <IoBodyOutline size={50} />
-                        <span>Uma Pessoa</span>
-                    </div>
+                    {type && <RegisterForm type={type} />}
                 </div>
-                {type && <RegisterForm type={type} />}
             </div>
         </>
     )

@@ -1,12 +1,19 @@
 #register-container {
-    display: flex;
     max-width: 770px;
-    justify-content: center;
-    flex-direction: column;
-    padding: 32px 64px;
+    min-height: calc(100vh - 164px);
+    padding: 36px 64px;
     margin: 0 auto;
     border-radius: 12px;
-    background: #ffff;
+
+    .register {
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        padding: 18px 64px;
+        border-radius: 12px;
+        background: #ffff;
+        min-height: 324px;
+    }
 
     .register-deck {
         display: grid;
@@ -36,7 +43,7 @@
         }
 
         &:hover {
-            background: #c6d3cb;
+            background: rgb(220, 226, 220);
         }
     }
 

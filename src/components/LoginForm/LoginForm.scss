@@ -1,0 +1,29 @@
+#login-form {
+    padding-top: 32px;
+    display: flex;
+    justify-content: center;
+    gap: 24px 0;
+    flex-direction: column;
+
+    .button-submit {
+        background-color: #28e289;
+        color: black;
+        margin-top: 1.5rem;
+
+        &:hover {
+            background: #3FD3AF !important;
+        }
+    }
+
+    .link {
+        color: #00bd7e;
+        width: 140px;
+        border: none;
+        text-decoration: none;
+
+        &:hover {
+            background: transparent !important;
+        }
+    }
+
+}
