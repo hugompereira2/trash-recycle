@@ -9,6 +9,7 @@ import 'leaflet/dist/leaflet.css';
 import iconImg from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 import "./RegisterForm.scss"
+import { registerUser } from "../../api/api";
 
 interface IRegister {
     type: string,
@@ -26,11 +27,11 @@ interface ICepResponse {
 
 interface IAddress {
     cep: string;
-    logradouro: string;
-    estado: string;
-    cidade: string;
-    bairro: string;
-    numero: string;
+    state: string;
+    city: string;
+    district: string;
+    street: string;
+    street_number: string;
 }
 
 interface IUser {
@@ -38,6 +39,7 @@ interface IUser {
     cnpj_cpf: string;
     email: string;
     whatsapp: string;
+    password: string;
     address: IAddress
 }
 
@@ -50,7 +52,18 @@ const RegisterForm = (props: IRegister) => {
     const [maskType, setMaskType] = useState<string>("");
 
     const { register, setValue, reset, handleSubmit, watch, formState: { errors } } = useForm<IUser>();
-    const onSubmit = (data: IUser) => console.log(data);
+
+    const onSubmit = async (data: IUser) => {
+        let payload = {
+            ...data,
+            userType_id: props.type == "PJ" ? "975791b6-e2c6-465f-848b-852811563230" : "7635808d-3f19-4543-ad4b-9390bd4b3770"
+        }
+
+        console.log(payload)
+        const resp = await registerUser(payload);
+        console.log(resp);
+
+    };
 
     function LocationMarker() {
         const [position, setPosition] = useState(null)
@@ -81,11 +94,11 @@ const RegisterForm = (props: IRegister) => {
         if (value?.length == 9) {
             const { data } = await axios.get<ICepResponse>(`http://viacep.com.br/ws/${value.replace("-", "")}/json/`);
 
-            setValue("address.estado", data.uf)
+            setValue("address.state", data.uf)
             setValue("address.cep", data.cep)
-            setValue("address.logradouro", data.logradouro)
-            setValue("address.cidade", data.localidade)
-            setValue("address.bairro", data.bairro)
+            setValue("address.street", data.logradouro)
+            setValue("address.city", data.localidade)
+            setValue("address.district", data.bairro)
 
             console.log(data);
 
@@ -151,6 +164,13 @@ const RegisterForm = (props: IRegister) => {
                     {errors.whatsapp && <span className="error-message">Campo obrigatório</span>}
                 </div>
             </div>
+            <div className="row">
+                <div className="input-group">
+                    <label className="label-title">Senha</label>
+                    <input {...register('password', { required: true })} type="password" className="input-text" minLength={6} />
+                    {errors.password && <span className="error-message">Campo obrigatório</span>}
+                </div>
+            </div>
             <h3>Endereço</h3>
             <div className="row">
                 <div className="input-group">
@@ -160,32 +180,32 @@ const RegisterForm = (props: IRegister) => {
                 </div>
                 <div className="input-group">
                     <label className="label-title">Rua</label>
-                    <input {...register('address.logradouro', { required: true })} disabled type="text" className="input-text" />
-                    {errors.address?.logradouro && <span className="error-message">Campo obrigatório</span>}
+                    <input {...register('address.street', { required: true })} disabled type="text" className="input-text" />
+                    {errors.address?.street && <span className="error-message">Campo obrigatório</span>}
                 </div>
             </div>
             <div className="row">
                 <div className="input-group">
                     <label className="label-title">Estado(UF)</label>
-                    <input {...register('address.estado', { required: true })} disabled type="text" className="input-text" />
-                    {errors.address?.estado && <span className="error-message">Campo obrigatório</span>}
+                    <input {...register('address.state', { required: true })} disabled type="text" className="input-text" />
+                    {errors.address?.state && <span className="error-message">Campo obrigatório</span>}
                 </div>
                 <div className="input-group">
                     <label className="label-title">Cidade</label>
-                    <input {...register('address.cidade', { required: true })} disabled type="text" className="input-text" />
-                    {errors.address?.cidade && <span className="error-message">Campo obrigatório</span>}
+                    <input {...register('address.city', { required: true })} disabled type="text" className="input-text" />
+                    {errors.address?.city && <span className="error-message">Campo obrigatório</span>}
                 </div>
             </div>
             <div className="row">
                 <div className="input-group">
                     <label className="label-title">Bairro</label>
-                    <input {...register('address.bairro', { required: true })} disabled type="text" className="input-text" />
-                    {errors.address?.bairro && <span className="error-message">Campo obrigatório</span>}
+                    <input {...register('address.district', { required: true })} disabled type="text" className="input-text" />
+                    {errors.address?.district && <span className="error-message">Campo obrigatório</span>}
                 </div>
                 <div className="input-group">
                     <label className="label-title">Número</label>
-                    <input {...register('address.numero', { required: true })} type="number" className="input-text" />
-                    {errors.address?.numero && <span className="error-message">Campo obrigatório</span>}
+                    <input {...register('address.street_number', { required: true })} type="number" className="input-text" />
+                    {errors.address?.street_number && <span className="error-message">Campo obrigatório</span>}
                 </div>
             </div>
             {

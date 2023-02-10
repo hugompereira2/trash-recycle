@@ -5,14 +5,14 @@ import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import LoginForm from "../LoginForm/LoginForm";
 import "./Navbar.scss";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const Navbar = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [user, setUser] = useState(false);
-
-    console.log(location)
+    const [showModal, setShowModal] = useState(false);
+    const [error, setError] = useState<string>("");
 
     const GoHome = () => {
         navigate("/");
@@ -27,9 +27,18 @@ const Navbar = () => {
     }
 
     const handleLogout = () => {
+        localStorage.removeItem("user");
         navigate("/");
-        setUser(true);
+        setUser(false);
     }
+
+    useEffect(() => {
+        const userStringfy = localStorage.getItem("user");
+
+        if (userStringfy) {
+            setUser(JSON.parse(userStringfy));
+        }
+    }, [showModal])
 
     return (
         <div id="navbar">
@@ -39,7 +48,7 @@ const Navbar = () => {
             </div>
             <div className={`navbar-options ${user ? "" : ""}`}>
                 {
-                    !user ?
+                    user ?
                         <>
                             <DropdownMenu.Root>
                                 <DropdownMenu.Trigger asChild>
@@ -68,10 +77,11 @@ const Navbar = () => {
                             {location.pathname == "/register" && <Link to="/">Voltar para Home</Link>}
                             {location.pathname != "/register" &&
                                 <>
-                                    <Dialog.Root>
+                                    <Dialog.Root open={showModal} onOpenChange={() => setShowModal(!showModal)}>
                                         <Dialog.Trigger
                                             type="button"
                                             className="dialog-button"
+                                            onClick={() => setError("")}
                                         >
                                             Login
                                         </Dialog.Trigger>
@@ -87,7 +97,8 @@ const Navbar = () => {
                                                 <Dialog.Title className="dialog-title">
                                                     Login
                                                 </Dialog.Title>
-                                                <LoginForm />
+                                                {error && <span className="error-message">{error}</span>}
+                                                <LoginForm setError={setError} setShowModal={setShowModal} />
                                             </Dialog.Content>
                                         </Dialog.Portal>
                                     </Dialog.Root>
