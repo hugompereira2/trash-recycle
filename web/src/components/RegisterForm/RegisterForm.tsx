@@ -8,6 +8,7 @@ import { LeafletMouseEvent } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import iconImg from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+import RecycleIcon from '../../assets/recycle_icon.svg';
 import "./RegisterForm.scss"
 import { registerUser } from "../../api/api";
 
@@ -41,27 +42,38 @@ interface IUser {
     whatsapp: string;
     password: string;
     address: IAddress
+    typeRecycle?: number[];
+    location?: [number, number];
 }
-
 
 const RegisterForm = (props: IRegister) => {
     const ref = useRef<HTMLHeadingElement>(null);
     const [user, setUser] = useState<IUser>();
+    const [locationIsRequired, setLocationIsRequired] = useState<boolean>(props.type === "PJ");
     const [initialPosition, setInitialPosition] = useState<[number, number]>([0, 0]);
     const [selectedPosition, setSelectedPosition] = useState<[number, number]>([0, 0]);
     const [maskType, setMaskType] = useState<string>("");
+    const [typesRecycling, setTypesRecycling] = useState([
+        { id: 1, name: "Papel", color: "#0268d3", selected: false },
+        { id: 2, name: "Plastico", color: "#ed0007", selected: false },
+        { id: 3, name: "Vidro", color: "#01a447", selected: false },
+        { id: 4, name: "Metal", color: "#fad002", selected: false },
+        { id: 5, name: "Organico", color: "#834125", selected: false },
+    ]);
 
-    const { register, setValue, reset, handleSubmit, watch, formState: { errors } } = useForm<IUser>();
+
+    const { register, reset, clearErrors, setValue, handleSubmit, formState: { errors } } = useForm<IUser>();
 
     const onSubmit = async (data: IUser) => {
+        console.log(data);
         let payload = {
             ...data,
             userType_id: props.type == "PJ" ? "975791b6-e2c6-465f-848b-852811563230" : "7635808d-3f19-4543-ad4b-9390bd4b3770"
         }
 
         console.log(payload)
-        const resp = await registerUser(payload);
-        console.log(resp);
+        // const resp = await registerUser(payload);
+        // console.log(resp);
 
     };
 
@@ -69,6 +81,8 @@ const RegisterForm = (props: IRegister) => {
         const [position, setPosition] = useState(null)
         const map = useMapEvents({
             click(e) {
+                clearErrors('location');
+                setValue("location", [e.latlng.lat, e.latlng.lng]);
                 setSelectedPosition([e.latlng.lat, e.latlng.lng]);
             },
 
@@ -99,7 +113,7 @@ const RegisterForm = (props: IRegister) => {
             setValue("address.street", data.logradouro)
             setValue("address.city", data.localidade)
             setValue("address.district", data.bairro)
-
+            clearErrors('address');
             console.log(data);
 
         }
@@ -121,11 +135,30 @@ const RegisterForm = (props: IRegister) => {
 
     L.Marker.prototype.options.icon = DefaultIcon;
 
+    const handleSelectItem = (name: string) => {
+        setTypesRecycling(prevTypesRecycling => {
+            const updatedTypesRecycling = prevTypesRecycling.map(type => {
+                if (type.name === name) {
+                    return { ...type, selected: !type.selected };
+                } else {
+                    return type;
+                }
+            });
+
+            const selectedIds = updatedTypesRecycling.filter(item => item.selected).map(item => item.id);
+            setValue("typeRecycle", selectedIds)
+
+            return updatedTypesRecycling;
+        });
+        clearErrors("typeRecycle");
+    }
+
     useEffect(() => {
         if (ref) {
             ref.current?.scrollIntoView({ behavior: "smooth" });
         }
 
+        setLocationIsRequired(props.type === "PJ");
         setMaskType(props.type == "PJ" ? "99.999.999/9999-99" : "999.999.999-99")
         reset({
             name: '',
@@ -209,19 +242,44 @@ const RegisterForm = (props: IRegister) => {
                 </div>
             </div>
             {
-                initialPosition.toString() !== [0, 0].toString() &&
-                <div className="map-container">
-                    <MapContainer center={initialPosition} zoom={15}>
-                        <TileLayer
-                            attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                        <Marker position={selectedPosition} icon={getMarkerIcon()} />
-                        <LocationMarker />
-                    </MapContainer>
-                </div>
+                initialPosition.toString() !== [0, 0].toString() && props.type == "PJ" &&
+                <>
+                    <div className="map-container">
+                        <MapContainer center={initialPosition} zoom={15}>
+                            <TileLayer
+                                attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                            <Marker position={selectedPosition} icon={getMarkerIcon()} />
+                            <LocationMarker />
+                        </MapContainer>
+                    </div>
+                    <input hidden type="text" {...register("location", { required: locationIsRequired })} />
+                    {errors.location && <span style={{ margin: "20px 0" }} className="error-message">Obrigatório marcar o mapa</span>}
+                </>
+
             }
-            <button type="submit">Enviar</button>
-        </form>
+            {
+                props.type == "PJ" &&
+                <>
+                    <h3 className="collection-item-title">Ítens de Coleta <small>Selecione um ou mais itens abaixo</small></h3>
+                    <div className="collection-items">
+                        {
+                            typesRecycling.map((type) => {
+                                return (
+                                    <div key={type.name} className={`item ${type.selected ? "selected-item" : ""}`} style={{ background: type.color }} onClick={() => handleSelectItem(type.name)}>
+                                        <img src={RecycleIcon} alt="Reciclar" />
+                                        <span>{type.name}</span>
+                                    </div>
+                                )
+                            })
+                        }
+                    </div>
+                    <input hidden type="text" {...register("typeRecycle", { required: locationIsRequired })} />
+                    {errors.typeRecycle && <span style={{marginBottom: "20px"}} className="error-message">Obrigatório selecionar um ou mais itens</span>}
+                </>
+            }
+            <button type="submit">{props.type == "PJ" ? "Registrar ponto de coleta" : "Registrar"}</button>
+        </form >
     )
 }
 
