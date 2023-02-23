@@ -106,7 +106,7 @@ const RegisterForm = (props: IRegister) => {
     const handleSearchCep = async (event: ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value?.replace("_", "");
         if (value?.length == 9) {
-            const { data } = await axios.get<ICepResponse>(`http://viacep.com.br/ws/${value.replace("-", "")}/json/`);
+            const { data } = await axios.get<ICepResponse>(`https://viacep.com.br/ws/${value.replace("-", "")}/json/`);
 
             setValue("address.state", data.uf)
             setValue("address.cep", data.cep)
