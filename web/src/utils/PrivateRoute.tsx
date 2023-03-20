@@ -8,16 +8,13 @@ export type ProtectedRouteProps = {
     user: object;
 };
 
-export default function ProtectedRoute({ authenticationPath, outlet }: ProtectedRouteProps) {
-    // console.log(outlet);
-    // if (localStorage.getItem("user") && outlet.type.name != "Register") {
-    //     return outlet;
-    // } else if (!localStorage.getItem("user") && outlet.type.name == "Register") {
-    //     return outlet;
-    // }
-    // else {
-    //     return <Navigate to={{ pathname: authenticationPath }} />;
-    // }
-
-    return outlet;
+export default function ProtectedRoute({ authenticationPath, outlet, user }: ProtectedRouteProps) {
+    if (Object.keys(user).length > 0 && outlet.type.name != "Register") {
+        return outlet;
+    } else if (Object.keys(user).length == 0 && outlet.type.name == "Register") {
+        return outlet;
+    }
+    else {
+        return <Navigate to={{ pathname: authenticationPath }} />;
+    }
 };

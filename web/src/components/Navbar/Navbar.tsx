@@ -47,7 +47,10 @@ const Navbar = () => {
         <div id="navbar">
             <div className="logo-dasboard">
                 <img src={logo} className="logo" alt="logo" onClick={GoHome} />
-                <span className={`${location.pathname == "/dashboard" ? "active-page" : ""} `} onClick={GoDashboard}>Dashboard</span>
+                {
+                    Object.keys(user).length > 0 &&
+                    <span className={`${location.pathname == "/dashboard" ? "active-page" : ""} `} onClick={GoDashboard}>Dashboard</span>
+                }
             </div>
             <div className={`navbar-options ${Object.keys(user).length > 0 ? "" : ""}`}>
                 {
