@@ -4,6 +4,25 @@ import { z } from "zod"
 import { prisma } from "./lib/prisma"
 import { genSaltSync, hashSync, compareSync } from "bcryptjs"
 
+interface Address {
+  cep: String
+  city: String
+  state: String
+  district: String
+  street: String
+  street_number: String
+}
+
+type userResponse = {
+  name: String
+  cnpj_cpf: String
+  email: String
+  password_hash?: String
+  address_id?: null | String
+  phone: String
+  address?: null | Address
+}
+
 export async function appRoutes(app: FastifyInstance) {
   app.post('/register', async (request) => {
     try {
@@ -26,9 +45,9 @@ export async function appRoutes(app: FastifyInstance) {
 
       const registerBody = createRegisterBody.parse(request.body)
 
-      console.log(registerBody);
+      // console.log(registerBody);
 
-      let address = null
+      let address = null;
 
       if (registerBody.address) {
         address = await prisma.address.create({
@@ -38,7 +57,7 @@ export async function appRoutes(app: FastifyInstance) {
             state: registerBody.address.state,
             district: registerBody.address.district,
             street: registerBody.address.street,
-            street_number: registerBody.address.street_number,
+            street_number: String(registerBody.address.street_number),
           }
         })
       }
@@ -46,9 +65,9 @@ export async function appRoutes(app: FastifyInstance) {
       const salt = genSaltSync(10);
       const hash = hashSync(registerBody.password, salt);
 
-      const today = dayjs().startOf('day').toDate()
+      const today = dayjs().startOf('day').toDate();
 
-      await prisma.user.create({
+      const user = await prisma.user.create({
         data: {
           name: registerBody.name,
           userType_id: registerBody.userType_id,
@@ -60,6 +79,16 @@ export async function appRoutes(app: FastifyInstance) {
           created_at: today
         }
       })
+
+      const userCreated: userResponse = {
+        ...user,
+        address: address
+      }
+
+      delete userCreated.password_hash
+      delete userCreated.address_id
+
+      return userCreated;
     } catch (error) {
       return error;
     }
@@ -117,7 +146,7 @@ export async function appRoutes(app: FastifyInstance) {
       })
       return user;
     } catch (error) {
-      return false;
+      return error;
     }
   })
 

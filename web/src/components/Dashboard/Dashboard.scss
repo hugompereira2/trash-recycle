@@ -1,18 +1,18 @@
 #dashboard {
     max-width: 1440px;
-    padding: 0 32px;
+    padding: 0 2rem;
     margin: 0 auto;
     color: black;
 
     h1 {
         font-size: 2rem;
-        margin: 0 0 32px 0;
+        margin: 0 0 2rem 0;
         color: #322153;
     }
 
     .table-container {
         border-radius: 8px;
-        padding: 24px;
+        padding: 1.5rem;
         background: white;
 
         table {

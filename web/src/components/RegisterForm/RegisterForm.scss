@@ -1,5 +1,5 @@
 #register-form {
-    padding: 64px 0;
+    padding: 4rem 0;
     display: flex;
     justify-content: center;
     flex-direction: column;
@@ -7,15 +7,9 @@
     .col {
         display: flex;
         flex-direction: column;
-        gap: 0 24px;
+        gap: 0 1.5rem;
         margin: 24px 0;
         user-select: none;
-    }
-
-    .input-group {
-        display: flex;
-        flex: 1;
-        flex-direction: column;
     }
 
     input:-webkit-autofill,
@@ -37,8 +31,8 @@
         justify-content: center;
         flex-wrap: wrap;
         align-items: center;
-        gap: 15px;
-        margin-bottom: 24px;
+        gap: 0.9375rem;
+        margin-bottom: 1.5rem;
     }
 
     .selected-item {
@@ -49,7 +43,7 @@
         display: flex;
         transition: all 0.1s;
         flex: 1 1 150px;
-        max-width: 200px;
+        max-width: 250px;
         cursor: pointer;
         flex-direction: column;
         justify-content: center;
@@ -70,7 +64,7 @@
 
     .collection-item-title {
         display: flex;
-        gap: 15px 30px;
+        gap: 0.9375rem 1.875rem;
         justify-content: space-between;
         align-items: center;
 
@@ -83,7 +77,7 @@
         height: 56px;
         background-color: #f0f0f5;
         color: black;
-        font-size: 18px;
+        font-size: 1.125rem;
         border-radius: 0.5rem;
         border: none;
         text-indent: 15px;
@@ -94,7 +88,7 @@
         width: 100%;
         height: 350px;
         border-radius: 8px;
-        margin-bottom: 24px;
+        margin-bottom: 1.5rem;
     }
 
     .input-text:focus {

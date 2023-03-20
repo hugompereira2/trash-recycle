@@ -41,7 +41,7 @@ model Address {
   state         String
   district      String
   street        String
-  street_number String
+  street_number String?
 
   address_user User[]
 

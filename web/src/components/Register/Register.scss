@@ -1,15 +1,19 @@
 #register-container {
     max-width: 770px;
     min-height: calc(100vh - 164px);
-    padding: 36px 64px;
+    padding: 2.25rem 4rem;
     margin: 0 auto;
     border-radius: 12px;
+
+    @media screen and (max-width: 765px) {
+        padding: 1rem 2rem;
+    }
 
     .register {
         display: flex;
         justify-content: center;
         flex-direction: column;
-        padding: 18px 64px;
+        padding: 1.125rem 4rem;
         border-radius: 12px;
         background: #ffff;
         min-height: 324px;
@@ -17,7 +21,7 @@
 
     .register-deck {
         display: grid;
-        gap: 30px;
+        gap: 1.875rem;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         justify-content: center;
         justify-items: center;
@@ -38,7 +42,7 @@
         background: #e1faec;
 
         span {
-            margin-top: 24px;
+            margin-top: 1.5rem;
             font-weight: 600;
         }
 

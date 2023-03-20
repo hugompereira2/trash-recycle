@@ -42,8 +42,7 @@ async function run() {
         state: "SP",
         district: "Garcia",
         street: "Rua Nilo Peçanha",
-        complement: "Perto da Tanger",
-        street_number: 300
+        street_number: "300"
       }
     }),
   ])

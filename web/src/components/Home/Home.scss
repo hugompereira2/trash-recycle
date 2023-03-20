@@ -3,8 +3,8 @@
     max-width: 1440px;
     justify-content: center;
     min-height: calc(100vh - 164px);
-    gap: 0 64px;
-    padding: 32px 64px;
+    gap: 0 4rem;
+    padding: 2rem 4rem;
     margin: 0 auto;
 
     .home {
@@ -12,7 +12,7 @@
         align-items: center;
         flex-direction: column;
         height: calc(100vh - 164px);
-        padding: 0 64px;
+        padding: 0 4rem;
         margin: 0 auto;
 
     }
@@ -24,7 +24,7 @@
     }
 
     .clean-world {
-        padding: 0 64px;
+        padding: 0 4rem;
         max-width: 550px;
         max-height: 700px;
     }
@@ -67,7 +67,7 @@
         span {
             display: flex;
             box-shadow: 1px 0 5px -2px #888;
-            padding: 0 25px;
+            padding: 0 1.5625rem;
             align-items: center;
             border-radius: 0.5rem 0 0 0.5rem;
             height: 100%;

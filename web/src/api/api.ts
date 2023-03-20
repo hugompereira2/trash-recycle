@@ -49,6 +49,10 @@ export const login = async (payload: LoginUser) => {
 }
 
 export const updateUser = async (payload: UpdateUser) => {
-    const response = await api.post(`update`, payload);
-    return response.data;
+    try {
+        const response = await api.post(`update`, payload);
+        return response;
+    } catch (err: any) {
+        return err
+    }
 }

@@ -5,6 +5,7 @@ import {
 export type ProtectedRouteProps = {
     authenticationPath: string;
     outlet: JSX.Element;
+    user: object;
 };
 
 export default function ProtectedRoute({ authenticationPath, outlet }: ProtectedRouteProps) {

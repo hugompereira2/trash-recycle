@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect, ChangeEvent, Dispatch, SetStateAction } from "react"
+import { useState, useRef, useEffect, ChangeEvent, Dispatch, SetStateAction, useContext } from "react"
+import userContext from "../../context/userContext";
 import { useForm } from "react-hook-form"
 import { Link, useNavigate } from "react-router-dom";
 import { login } from "../../api/api";
@@ -16,15 +17,16 @@ interface propsLoginForm {
 
 const LoginForm = ({ setError, setShowModal }: propsLoginForm) => {
     const navigate = useNavigate();
-    const [user, setUser] = useState<ILoginForm>();
+
+    const { user, setUser } = useContext(userContext);
 
     const { register, setValue, reset, handleSubmit, watch, formState: { errors } } = useForm<ILoginForm>();
     const onSubmit = async (data: ILoginForm) => {
         const resp = await login(data);
 
         if (resp) {
-            console.log(resp);
             setShowModal(false);
+            setUser(resp);
             localStorage.setItem("user", JSON.stringify(resp));
             navigate("/dashboard");
         } else {

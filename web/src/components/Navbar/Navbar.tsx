@@ -2,17 +2,20 @@ import logo from '../../assets/logo.svg';
 import { CaretDown, Plus, SignOut, UserCircle, UserSquare, X } from "phosphor-react";
 import * as Dialog from '@radix-ui/react-dialog';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
+import userContext from '../../context/userContext'
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import LoginForm from "../LoginForm/LoginForm";
 import "./Navbar.scss";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 
 const Navbar = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const [user, setUser] = useState(false);
+    const [userStorage, setUserStorage] = useState();
     const [showModal, setShowModal] = useState(false);
     const [error, setError] = useState<string>("");
+
+    const { user, setUser } = useContext(userContext);
 
     const GoHome = () => {
         navigate("/");
@@ -28,17 +31,17 @@ const Navbar = () => {
 
     const handleLogout = () => {
         localStorage.removeItem("user");
+        setUser({});
         navigate("/");
-        setUser(false);
     }
 
-    useEffect(() => {
-        const userStringfy = localStorage.getItem("user");
+    // useEffect(() => {
+    //     const userStringfy = localStorage.getItem("user");
 
-        if (userStringfy) {
-            setUser(JSON.parse(userStringfy));
-        }
-    }, [showModal])
+    //     if (userStringfy) {
+    //         setUser(JSON.parse(userStringfy));
+    //     }
+    // }, [showModal])
 
     return (
         <div id="navbar">
@@ -46,17 +49,22 @@ const Navbar = () => {
                 <img src={logo} className="logo" alt="logo" onClick={GoHome} />
                 <span className={`${location.pathname == "/dashboard" ? "active-page" : ""} `} onClick={GoDashboard}>Dashboard</span>
             </div>
-            <div className={`navbar-options ${user ? "" : ""}`}>
+            <div className={`navbar-options ${Object.keys(user).length > 0 ? "" : ""}`}>
                 {
-                    user ?
+                    Object.keys(user).length > 0 ?
                         <>
                             <DropdownMenu.Root>
                                 <DropdownMenu.Trigger asChild>
                                     <div className="user-info">
                                         <UserCircle size={32} color="#737c7b" />
                                         <div className="user-name-type">
-                                            <span>Hugo Mendonça Pereira</span>
-                                            <small>Pessoa Jurídica <CaretDown size={20} color="#636363" /></small>
+                                            <span>{user.name}</span>
+                                            <small>
+                                                {user.userType_id == "975791b6-e2c6-465f-848b-852811563230"
+                                                    ? " Pessoa Jurídica"
+                                                    : "Pessoa Física"}
+                                                <CaretDown size={20} color="#636363" />
+                                            </small>
                                         </div>
                                     </div>
                                 </DropdownMenu.Trigger>

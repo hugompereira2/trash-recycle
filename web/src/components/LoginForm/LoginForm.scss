@@ -1,9 +1,13 @@
 #login-form {
-    padding-top: 32px;
+    padding-top: 2rem;
     display: flex;
     justify-content: center;
-    gap: 24px 0;
+    gap: 1.5rem 0;
     flex-direction: column;
+
+    .input-group {
+        flex: 1 !important;
+    }
 
     .button-submit {
         background-color: #28e289;
