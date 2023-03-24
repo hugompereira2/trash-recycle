@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect, ChangeEvent, useContext } from "react"
 import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import InputMask from "react-input-mask";
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
@@ -12,20 +11,11 @@ import iconImg from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 import RecycleIcon from '../../assets/recycle_icon.svg';
 import "./RegisterForm.scss"
-import { registerUser } from "../../api/api";
+import { registerUser, findMaterials, findCep, validateEmail } from "../../api/api";
+import { CircleNotch } from "phosphor-react";
 
 interface IRegister {
     type: string,
-}
-
-interface ICepResponse {
-    cep: string;
-    logradouro: string;
-    complemento: string;
-    bairro: string;
-    localidade: string;
-    uf: string;
-    unidade: string;
 }
 
 interface IAddress {
@@ -35,6 +25,7 @@ interface IAddress {
     district: string;
     street: string;
     street_number: string;
+    location?: [number, number];
 }
 
 interface IUser {
@@ -44,33 +35,34 @@ interface IUser {
     whatsapp: string;
     password: string;
     address: IAddress
-    typeRecycle?: number[];
-    location?: [number, number];
+    materialUser?: string[];
+}
+
+type TypesRecycling = {
+    id: string;
+    name: string;
+    color: string;
+    selected: boolean;
 }
 
 const RegisterForm = (props: IRegister) => {
     const ref = useRef<HTMLHeadingElement>(null);
     const [userForm, setUserForm] = useState<IUser>();
+    const [loading, setLoading] = useState(false);
     const [locationIsRequired, setLocationIsRequired] = useState<boolean>(props.type === "PJ");
     const [initialPosition, setInitialPosition] = useState<[number, number]>([0, 0]);
     const [selectedPosition, setSelectedPosition] = useState<[number, number]>([0, 0]);
     const [maskType, setMaskType] = useState<string>("");
-    const [typesRecycling, setTypesRecycling] = useState([
-        { id: 1, name: "Papel", color: "#0268d3", selected: false },
-        { id: 2, name: "Plastico", color: "#ed0007", selected: false },
-        { id: 3, name: "Vidro", color: "#01a447", selected: false },
-        { id: 4, name: "Metal", color: "#fad002", selected: false },
-        { id: 5, name: "Organico", color: "#834125", selected: false },
-    ]);
+    const [typesRecycling, setTypesRecycling] = useState<TypesRecycling[]>([]);
 
     const { setUser } = useContext(userContext);
 
     const navigate = useNavigate();
 
-
-    const { register, reset, clearErrors, setValue, handleSubmit, formState: { errors } } = useForm<IUser>();
+    const { register, reset, clearErrors, setValue, handleSubmit, setError, formState: { errors } } = useForm<IUser>();
 
     const onSubmit = async (data: IUser) => {
+        setLoading(true);
         const payload = {
             ...data,
             userType_id: props.type == "PJ"
@@ -79,9 +71,19 @@ const RegisterForm = (props: IRegister) => {
         }
 
         const resp = await registerUser(payload);
+        setLoading(false);
 
         if (resp) {
+
+            if (resp.address?.location) {
+                const locationSplited = resp.address?.location?.split(",")
+                const locationFormatted = locationSplited ? [parseFloat(locationSplited[0]), parseFloat(locationSplited[1])] : []
+
+                resp.address.location = locationFormatted
+            }
+
             const user = JSON.stringify(resp)
+
             localStorage.setItem("user", user);
             setUser(resp);
             navigate("/dashboard");
@@ -89,12 +91,17 @@ const RegisterForm = (props: IRegister) => {
 
     };
 
+    const getMaterials = async () => {
+        const { data } = await findMaterials();
+        setTypesRecycling(data);
+    }
+
     function LocationMarker() {
         const [position, setPosition] = useState(null)
-        const map = useMapEvents({
+        useMapEvents({
             click(e) {
-                clearErrors('location');
-                setValue("location", [e.latlng.lat, e.latlng.lng]);
+                clearErrors('address.location');
+                setValue("address.location", [e.latlng.lat, e.latlng.lng]);
                 setSelectedPosition([e.latlng.lat, e.latlng.lng]);
             },
 
@@ -118,7 +125,7 @@ const RegisterForm = (props: IRegister) => {
     const handleSearchCep = async (event: ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value?.replace("_", "");
         if (value?.length == 9) {
-            const { data } = await axios.get<ICepResponse>(`https://viacep.com.br/ws/${value.replace("-", "")}/json/`);
+            const { data } = await findCep(value);
 
             setValue("address.state", data.uf)
             setValue("address.cep", data.cep)
@@ -126,10 +133,26 @@ const RegisterForm = (props: IRegister) => {
             setValue("address.city", data.localidade)
             setValue("address.district", data.bairro)
             clearErrors('address');
-            console.log(data);
-
         }
-        return
+        return;
+    }
+
+    const handleEmailInput = async (value: string) => {
+        register('email', { required: true });
+        if (!value.includes("@") || !value.includes(".com")) {
+            setError('email', { type: 'custom', message: 'E-mail inválido!' });
+            return
+        }
+
+        const { data: canRegisterEmail } = await validateEmail(value);
+
+        if (!canRegisterEmail) {
+            setError('email', { type: 'custom', message: 'E-mail já cadastrado!' });
+            return
+        }
+
+        clearErrors('email');
+        setValue("email", value)
     }
 
     useEffect(() => {
@@ -137,6 +160,7 @@ const RegisterForm = (props: IRegister) => {
             const { latitude, longitude } = position.coords;
             setInitialPosition([latitude, longitude]);
         });
+        getMaterials();
     }, [])
 
 
@@ -158,11 +182,11 @@ const RegisterForm = (props: IRegister) => {
             });
 
             const selectedIds = updatedTypesRecycling.filter(item => item.selected).map(item => item.id);
-            setValue("typeRecycle", selectedIds)
+            setValue("materialUser", selectedIds)
 
             return updatedTypesRecycling;
         });
-        clearErrors("typeRecycle");
+        clearErrors("materialUser");
     }
 
     useEffect(() => {
@@ -175,10 +199,9 @@ const RegisterForm = (props: IRegister) => {
         reset({
             name: '',
             cnpj_cpf: '',
-            email: '',
+            email: ' ',
             whatsapp: '',
         });
-
     }, [props.type])
 
     return (
@@ -200,8 +223,14 @@ const RegisterForm = (props: IRegister) => {
             <div className="row">
                 <div className="input-group">
                     <label className="label-title">E-mail</label>
-                    <input {...register('email', { required: true })} type="email" className="input-text" />
-                    {errors.email && <span className="error-message">Campo obrigatório</span>}
+                    <input
+                        minLength={8}
+                        {...register('email', { required: true })}
+                        onChange={event => handleEmailInput(event.target.value)}
+                        className="input-text"
+                    />
+                    {/* <input {...register('email', { required: true })} type="email" className="input-text" /> */}
+                    {errors.email && <span className="error-message">{errors?.email.message}</span>}
                 </div>
                 <div className="input-group">
                     <label className="label-title">Whatsapp</label>
@@ -270,10 +299,9 @@ const RegisterForm = (props: IRegister) => {
                             <LocationMarker />
                         </MapContainer>
                     </div>
-                    <input hidden type="text" {...register("location", { required: locationIsRequired })} />
-                    {errors.location && <span style={{ margin: "20px 0" }} className="error-message">Obrigatório marcar o mapa</span>}
+                    <input hidden type="text" {...register("address.location", { required: locationIsRequired })} />
+                    {errors.address?.location && <span style={{ margin: "20px 0" }} className="error-message">Obrigatório marcar o mapa</span>}
                 </>
-
             }
             {
                 props.type == "PJ" &&
@@ -281,7 +309,7 @@ const RegisterForm = (props: IRegister) => {
                     <h3 className="collection-item-title">Ítens de Coleta <small>Selecione um ou mais itens abaixo</small></h3>
                     <div className="collection-items">
                         {
-                            typesRecycling.map((type) => {
+                            typesRecycling.length > 0 && typesRecycling.map((type) => {
                                 return (
                                     <div key={type.name} className={`item ${type.selected ? "selected-item" : ""}`} style={{ background: type.color }} onClick={() => handleSelectItem(type.name)}>
                                         <img src={RecycleIcon} alt="Reciclar" />
@@ -291,11 +319,17 @@ const RegisterForm = (props: IRegister) => {
                             })
                         }
                     </div>
-                    <input hidden type="text" {...register("typeRecycle", { required: locationIsRequired })} />
-                    {errors.typeRecycle && <span style={{ marginBottom: "20px" }} className="error-message">Obrigatório selecionar um ou mais itens</span>}
+                    <input hidden type="text" {...register("materialUser", { required: locationIsRequired })} />
+                    {errors.materialUser && <span style={{ marginBottom: "20px" }} className="error-message">Obrigatório selecionar um ou mais itens</span>}
                 </>
             }
-            <button type="submit">{props.type == "PJ" ? "Registrar ponto de coleta" : "Registrar"}</button>
+            <button type="submit">
+                {
+                    loading ?
+                        <CircleNotch className="spinner" size={30} color="#FFFFFF" />
+                        : props.type == "PJ" ? "Registrar ponto de coleta" : "Registrar"
+                }
+            </button>
         </form >
     )
 }

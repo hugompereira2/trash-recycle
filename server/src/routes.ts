@@ -1,26 +1,29 @@
 import dayjs from "dayjs"
 import { FastifyInstance } from "fastify"
-import { z } from "zod"
+import { string, z } from "zod"
 import { prisma } from "./lib/prisma"
 import { genSaltSync, hashSync, compareSync } from "bcryptjs"
 
 interface Address {
-  cep: String
-  city: String
-  state: String
-  district: String
-  street: String
-  street_number: String
+  cep: string;
+  city: string;
+  state: string;
+  district: string;
+  street: string;
+  street_number?: string | null;
+  location: string;
 }
 
 type userResponse = {
-  name: String
-  cnpj_cpf: String
-  email: String
-  password_hash?: String
-  address_id?: null | String
-  phone: String
-  address?: null | Address
+  id?: string;
+  name: string;
+  cnpj_cpf: string;
+  email: string;
+  password_hash?: string;
+  address_id?: string | null;
+  phone: string;
+  address?: Address | null;
+  materialUser?: { material_id: string }[]
 }
 
 export async function appRoutes(app: FastifyInstance) {
@@ -39,16 +42,15 @@ export async function appRoutes(app: FastifyInstance) {
           state: z.string(),
           district: z.string(),
           street: z.string(),
-          street_number: z.string().optional(),
-        }).optional()
+          location: z.array(z.number(), z.number()),
+          street_number: z.string().optional()
+        }).optional(),
+        materialUser: z.array(z.string()).optional(),
       })
 
       const registerBody = createRegisterBody.parse(request.body)
 
-      // console.log(registerBody);
-
       let address = null;
-
       if (registerBody.address) {
         address = await prisma.address.create({
           data: {
@@ -57,6 +59,7 @@ export async function appRoutes(app: FastifyInstance) {
             state: registerBody.address.state,
             district: registerBody.address.district,
             street: registerBody.address.street,
+            location: String(registerBody.address.location),
             street_number: String(registerBody.address.street_number),
           }
         })
@@ -80,9 +83,26 @@ export async function appRoutes(app: FastifyInstance) {
         }
       })
 
+      let materialList: { material_id: string }[] = [];
+
+      if (registerBody.materialUser) {
+        await Promise.all(
+          registerBody.materialUser.map(async (material_id) => {
+            const material = await prisma.materialUser.create({
+              data: {
+                user_id: user.id,
+                material_id: material_id,
+              }
+            });
+            materialList.push({ "material_id": material.material_id });
+          })
+        );
+      }
+
       const userCreated: userResponse = {
         ...user,
-        address: address
+        address: address,
+        materialUser: materialList
       }
 
       delete userCreated.password_hash
@@ -108,17 +128,27 @@ export async function appRoutes(app: FastifyInstance) {
         where: {
           email: userLoginBody.email
         },
+        include: {
+          address: true,
+          materialUser: { select: { material_id: true } },
+        },
       })
 
-      const passwordCorrect = compareSync(userLoginBody.password, user!.password_hash);
+      if (user) {
+        const passwordCorrect = compareSync(userLoginBody.password, user.password_hash!);
 
-      if (passwordCorrect) {
-        return user
+        if (passwordCorrect) {
+
+          // destructuring
+          const { password_hash: ph, address_id: ai, ...newObjUser } = user;
+
+          return newObjUser;
+        }
       }
 
       return false;
     } catch (error) {
-      return false
+      return error
     }
   })
 
@@ -126,25 +156,112 @@ export async function appRoutes(app: FastifyInstance) {
     try {
       const createUserUpdateBody = z.object({
         name: z.string(),
-        email: z.string(),
         cnpj_cpf: z.string(),
+        email: z.string(),
         whatsapp: z.string(),
+        address: z.object({
+          cep: z.string(),
+          city: z.string(),
+          state: z.string(),
+          district: z.string(),
+          street: z.string(),
+          location: z.array(z.number(), z.number()),
+          street_number: z.string().optional()
+        }).nullable().optional(),
+        materialUser: z.object({ material_id: z.string() }).array().optional(),
       })
 
       const userUpdateBody = createUserUpdateBody.parse(request.body)
 
-      const user = await prisma.user.update({
+      let user: userResponse;
+
+      user = await prisma.user.update({
         where: {
           email: userUpdateBody.email
         },
         data: {
           name: userUpdateBody.name,
-          email: userUpdateBody.email,
           cnpj_cpf: userUpdateBody.cnpj_cpf,
           phone: userUpdateBody.whatsapp,
         },
       })
+
+      if (user?.address_id) {
+        user.address = await prisma.address.update({
+          where: {
+            id: user.address_id
+          },
+          data: {
+            cep: userUpdateBody.address?.cep,
+            city: userUpdateBody.address?.city,
+            state: userUpdateBody.address?.state,
+            district: userUpdateBody.address?.district,
+            street: userUpdateBody.address?.street,
+            location: String(userUpdateBody.address?.location),
+            street_number: userUpdateBody.address?.street_number,
+          },
+        })
+
+        await prisma.materialUser.deleteMany({
+          where: {
+            user_id: user.id
+          }
+        })
+
+        let materialList: { material_id: string }[] = [];
+
+        await Promise.all(
+          userUpdateBody.materialUser!.map(async (material) => {
+            const materialCreated = await prisma.materialUser.create({
+              data: {
+                user_id: user.id!,
+                material_id: material.material_id,
+              },
+            })
+            materialList.push({ "material_id": materialCreated.material_id });
+          })
+        );
+        user.materialUser = materialList;
+      }
+
+      delete user.password_hash;
+      delete user.address_id;
+
       return user;
+    } catch (error) {
+      return error;
+    }
+  })
+
+  app.get('/findAllMaterials', async () => {
+    try {
+      const materials = await prisma.material.findMany();
+
+      return materials;
+
+    } catch (error) {
+      return error;
+    }
+  })
+
+  app.get('/validateEmail/:id', async (request) => {
+    try {
+
+      const createEmailBody = z.object({ id: z.string() });
+      const emailGetBody = createEmailBody.parse(request.params);
+
+      const user = await prisma.user.findFirst({
+        where: {
+          email: emailGetBody.id
+        }
+      })
+
+      if (user) {
+        return false;
+      }
+
+      return true;
+
     } catch (error) {
       return error;
     }

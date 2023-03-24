@@ -9,6 +9,7 @@
     background-color: #e5e7eb;
 
     font-synthesis: none;
+    box-sizing: border-box;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -42,6 +43,37 @@ html {
     display: flex;
     flex: 1 1 200px;
     flex-direction: column;
+}
+
+.spinner {
+    animation: spinner 1s infinite linear;
+}
+
+input:read-only {
+    background: #d1d1d1 !important;
+    cursor: not-allowed;
+}
+
+@keyframes spinner {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    50% {
+        transform: rotate(185deg);
+    }
+
+    100% {
+        transform: rotate(365deg);
+    }
+}
+
+.leaflet-container,
+.map-container {
+    width: 100%;
+    height: 350px;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
 }
 
 .input-text {

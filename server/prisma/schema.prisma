@@ -13,13 +13,14 @@ model User {
   userType_id   String
   address_id    String?
   cnpj_cpf      String
-  email         String @unique
+  email         String   @unique
   phone         String
   password_hash String
   created_at    DateTime
 
-  userType UserType @relation(fields: [userType_id], references: [id])
-  address  Address? @relation(fields: [address_id], references: [id])
+  userType     UserType       @relation(fields: [userType_id], references: [id])
+  address      Address?       @relation(fields: [address_id], references: [id])
+  materialUser MaterialUser[]
 
   @@unique([address_id, email])
   @@map("users")
@@ -31,19 +32,41 @@ model UserType {
 
   userTypes_user User[]
 
-  @@map("UserTypes")
+  @@map("userTypes")
 }
 
 model Address {
-  id            String @id @default(uuid())
+  id            String  @id @default(uuid())
   cep           String
   city          String
   state         String
   district      String
   street        String
+  location      String
   street_number String?
 
   address_user User[]
 
-  @@map("Addresses")
+  @@map("addresses")
+}
+
+model MaterialUser {
+  id          String @id @default(uuid())
+  user_id     String
+  material_id String
+
+  User     User     @relation(fields: [user_id], references: [id])
+  Material Material @relation(fields: [material_id], references: [id])
+
+  @@map("materialsUser")
+}
+
+model Material {
+  id    String @id @default(uuid())
+  name  String @unique
+  color String
+
+  materialUser MaterialUser[]
+
+  @@map("materials")
 }

@@ -92,7 +92,7 @@ const Navbar = () => {
                                         <Dialog.Trigger
                                             type="button"
                                             className="dialog-button"
-                                            onClick={() => setError("")}
+                                            onClick={() => ("")}
                                         >
                                             Login
                                         </Dialog.Trigger>

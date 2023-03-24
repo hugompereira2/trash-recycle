@@ -7,6 +7,7 @@ interface Address {
   district: string
   street: string
   street_number: string
+  location: [number, number]
 }
 
 type UserType = {
@@ -18,6 +19,7 @@ type UserType = {
   address_id?: null | string
   phone: string
   address?: null | Address
+  materialUser: { material_id: string }[]
 }
 
 interface UserContextType {

@@ -16,6 +16,16 @@ interface RegisterUser {
     whatsapp: string;
 }
 
+interface CepResponse {
+    cep: string;
+    logradouro: string;
+    complemento: string;
+    bairro: string;
+    localidade: string;
+    uf: string;
+    unidade: string;
+}
+
 interface LoginUser {
     email: string;
     password: string;
@@ -51,6 +61,34 @@ export const login = async (payload: LoginUser) => {
 export const updateUser = async (payload: UpdateUser) => {
     try {
         const response = await api.post(`update`, payload);
+        return response;
+    } catch (err: any) {
+        return err
+    }
+}
+
+export const findMaterials = async () => {
+    try {
+        const response = await api.get(`findAllMaterials`);
+        return response;
+    } catch (err: any) {
+        return err
+    }
+}
+
+
+export const validateEmail = async (email: string) => {
+    try {
+        const response = await api.get<boolean>(`validateEmail/${email}`);
+        return response;
+    } catch (err: any) {
+        return err
+    }
+}
+
+export const findCep = async (cep: string) => {
+    try {
+        const response = await axios.get<CepResponse>(`https://viacep.com.br/ws/${cep.replace("-", "")}/json/`);
         return response;
     } catch (err: any) {
         return err

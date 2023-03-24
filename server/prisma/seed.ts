@@ -12,8 +12,9 @@ const thirdHabitId = 'fa1a1bcf-3d87-4626-8c0d-d7fd1255ac00'
 const thirdHabitCreationDate = new Date('2023-01-08T03:00:00.000')
 
 async function run() {
-  await prisma.user.deleteMany()
   await prisma.address.deleteMany()
+  await prisma.materialUser.deleteMany()
+  await prisma.user.deleteMany()
   await prisma.userType.deleteMany()
 
   /**
@@ -35,34 +36,69 @@ async function run() {
       }
     }),
 
-    prisma.address.create({
+    prisma.material.create({
       data: {
-        cep: '16400-222',
-        city: "Lins",
-        state: "SP",
-        district: "Garcia",
-        street: "Rua Nilo Peçanha",
-        street_number: "300"
-      }
-    }),
-  ])
-
-  await Promise.all([
-
-    prisma.user.create({
-      data: {
-        name: "Hugo Mendonça Pereira",
-        userType_id: secondHabitId,
-        password_hash: "fa1a1bcf-3d87-4626-8c0d-d7fd1255ac00",
-        address_id: "fa1a1bcf-3d87-4626-8c0d-d7fd1255ac00",
-        cnpj_cpf: "42.480.502/0001-07",
-        email: "hugompereira@gmail.com",
-        phone: "(14) 99662-2121",
-        created_at: thirdHabitCreationDate
+        name: 'Papel',
+        color: '#0268d3',
       }
     }),
 
+    prisma.material.create({
+      data: {
+        name: 'Plastico',
+        color: '#ed0007',
+      }
+    }),
+
+    prisma.material.create({
+      data: {
+        name: 'Metal',
+        color: '#fad002',
+      }
+    }),
+
+    prisma.material.create({
+      data: {
+        name: 'Organico',
+        color: '#834125',
+      }
+    }),
+
+    prisma.material.create({
+      data: {
+        name: 'Vidro',
+        color: '#01a447',
+      }
+    }),
+
+    // prisma.address.create({
+    //   data: {
+    //     cep: '16400-222',
+    //     city: "Lins",
+    //     state: "SP",
+    //     district: "Garcia",
+    //     street: "Rua Nilo Peçanha",
+    //     street_number: "300"
+    //   }
+    // }),
   ])
+
+  // await Promise.all([
+
+  //   prisma.user.create({
+  //     data: {
+  //       name: "Hugo Mendonça Pereira",
+  //       userType_id: "975791b6-e2c6-465f-848b-852811563230",
+  //       password_hash: "fa1a1bcf-3d87-4626-8c0d-d7fd1255ac00",
+  //       address_id: "fa1a1bcf-3d87-4626-8c0d-d7fd1255ac00",
+  //       cnpj_cpf: "42.480.502/0001-07",
+  //       email: "hugompereira@gmail.com",
+  //       phone: "(14) 99662-2121",
+  //       created_at: thirdHabitCreationDate
+  //     }
+  //   }),
+
+  // ])
 }
 
 run()

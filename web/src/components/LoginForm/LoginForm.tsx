@@ -1,9 +1,10 @@
-import { useState, useRef, useEffect, ChangeEvent, Dispatch, SetStateAction, useContext } from "react"
+import { useState, Dispatch, SetStateAction, useContext } from "react"
 import userContext from "../../context/userContext";
 import { useForm } from "react-hook-form"
 import { Link, useNavigate } from "react-router-dom";
 import { login } from "../../api/api";
 import "./LoginForm.scss"
+import { CircleNotch } from "phosphor-react";
 
 interface ILoginForm {
     email: string,
@@ -16,22 +17,34 @@ interface propsLoginForm {
 }
 
 const LoginForm = ({ setError, setShowModal }: propsLoginForm) => {
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     const { user, setUser } = useContext(userContext);
 
     const { register, setValue, reset, handleSubmit, watch, formState: { errors } } = useForm<ILoginForm>();
     const onSubmit = async (data: ILoginForm) => {
-        const resp = await login(data);
+        setLoading(true);
+        let resp = await login(data);
 
         if (resp) {
             setShowModal(false);
+
+            if (resp.address) {
+                const locationSplited = resp.address.location.split(",")
+                const locationFormatted = locationSplited ? [parseFloat(locationSplited[0]), parseFloat(locationSplited[1])] : []
+
+                resp.address.location = locationFormatted
+
+            }
             setUser(resp);
+
             localStorage.setItem("user", JSON.stringify(resp));
             navigate("/dashboard");
         } else {
             setError("Usuário/Senha incorretos!");
         }
+        setLoading(false);
     };
 
     return (
@@ -47,7 +60,13 @@ const LoginForm = ({ setError, setShowModal }: propsLoginForm) => {
                 {errors.password && <span className="error-message">Campo obrigatório</span>}
             </div>
             <Link className="link" to="/register">Não tenho cadastro</Link>
-            <button type="submit" className="button-submit">Login</button>
+            <button type="submit" className="button-submit">
+                {
+                    loading
+                        ? <CircleNotch className="spinner" size={30} color="#FFFFFF" />
+                        : "Login"
+                }
+            </button>
         </form>
     )
 }
