@@ -25,6 +25,10 @@ const Navbar = () => {
         navigate("/dashboard");
     }
 
+    const GoRequisition = () => {
+        navigate("/solicitacao");
+    }
+
     const goProfile = () => {
         navigate("/profile");
     }
@@ -48,8 +52,12 @@ const Navbar = () => {
             <div className="logo-dasboard">
                 <img src={logo} className="logo" alt="logo" onClick={GoHome} />
                 {
-                    Object.keys(user).length > 0 &&
+                    Object.keys(user).length > 0 && user.userType_id == "975791b6-e2c6-465f-848b-852811563230" &&
                     <span className={`${location.pathname == "/dashboard" ? "active-page" : ""} `} onClick={GoDashboard}>Dashboard</span>
+                }
+                {
+                    Object.keys(user).length > 0 && user.userType_id == "7635808d-3f19-4543-ad4b-9390bd4b3770" &&
+                    <span className={`${location.pathname == "/solicitacao" ? "active-page" : ""} `} onClick={GoRequisition}>Solicitação</span>
                 }
             </div>
             <div className={`navbar-options ${Object.keys(user).length > 0 ? "" : ""}`}>

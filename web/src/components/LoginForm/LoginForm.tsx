@@ -40,7 +40,12 @@ const LoginForm = ({ setError, setShowModal }: propsLoginForm) => {
             setUser(resp);
 
             localStorage.setItem("user", JSON.stringify(resp));
-            navigate("/dashboard");
+
+            if (resp.userType_id == "975791b6-e2c6-465f-848b-852811563230") {
+                navigate("/dashboard");
+            } else {
+                navigate("/solicitacao");
+            }
         } else {
             setError("Usuário/Senha incorretos!");
         }

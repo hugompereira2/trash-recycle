@@ -33,12 +33,13 @@
     }
 
     .selected-item {
-        border: 3px solid #000000;
+        border: 3px solid #000000 !important;
     }
 
     .item {
         display: flex;
         transition: all 0.1s;
+        border: 3px solid transparent;
         flex: 1 1 150px;
         max-width: 220px;
         cursor: pointer;

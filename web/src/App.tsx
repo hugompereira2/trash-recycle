@@ -13,21 +13,26 @@ import {
   Route
 } from "react-router-dom";
 import ProtectedRoute, { ProtectedRouteProps } from "./utils/PrivateRoute";
+import Requisition from "./components/Requisition/Requisition";
 
 function App() {
   const [user, setUser] = useState<any>({});
 
-  useEffect(() => {
+  const handleStorage = () => {
     const userLocalStorage = localStorage.getItem("user");
+
     if (userLocalStorage && userLocalStorage !== "{}") {
       setUser(JSON.parse(userLocalStorage!));
       localStorage.setItem("user", userLocalStorage);
     }
+  }
+
+  useEffect(() => {
+    handleStorage();
   }, []);
 
   const defaultProtectedRouteProps: Omit<ProtectedRouteProps, 'outlet'> = {
     authenticationPath: '/',
-    user: user,
   };
 
   return (
@@ -39,7 +44,8 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/register" element={<ProtectedRoute {...defaultProtectedRouteProps} outlet={<Register />} />} />
           <Route path="/dashboard" element={<ProtectedRoute {...defaultProtectedRouteProps} outlet={<Dashboard />} />} />
-          <Route path="/profile" element={<Profile />} />
+          <Route path="/solicitacao" element={<ProtectedRoute {...defaultProtectedRouteProps} outlet={<Requisition />} />} />
+          <Route path="/profile" element={<ProtectedRoute {...defaultProtectedRouteProps} outlet={<Profile />} />} />
         </Routes>
       </userContext.Provider>
     </BrowserRouter >

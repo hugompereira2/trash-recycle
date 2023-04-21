@@ -28,7 +28,7 @@ interface UserContextType {
 }
 
 export const userContext = createContext<UserContextType>({
-  user: {} as UserType,
+  user: localStorage.getItem("user") !== null ? JSON.parse(localStorage.getItem("user")!) : {},
   setUser: () => { }
 });
 
