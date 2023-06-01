@@ -76,6 +76,14 @@ export const findMaterials = async () => {
     }
 }
 
+export const findCompanyByMaterial = async (material: string) => {
+    try {
+        const response = await api.get(`findByMaterial?materials=${encodeURIComponent(material)}`);
+        return response;
+    } catch (err: any) {
+        return err
+    }
+}
 
 export const validateEmail = async (email: string) => {
     try {

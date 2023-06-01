@@ -1,0 +1,109 @@
+#company {
+    padding: 1rem 2rem;
+    background: #FFFFFF;
+    border: 2px solid transparent;
+    transition: 0.3s;
+    border-radius: 12px;
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+
+    .company-info {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .company-status {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+
+        h2 {
+            margin: 0 0 0.5rem 0;
+        }
+    }
+
+    .state {
+        font-size: 0.875rem;
+        font-weight: 600;
+        margin-top: 0.5rem;
+    }
+
+    .img-container {
+        display: grid;
+        place-items: center;
+        width: 110px;
+        height: 110px;
+        border-radius: 100%;
+        background: #e9e9e9;
+    }
+
+    &:hover {
+        cursor: pointer;
+        border: 2px solid #322153;
+    }
+
+    .company-badge {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        align-items: center;
+    }
+
+    .badge {
+        max-width: 150px;
+        padding: 0.2rem 0.8rem;
+        font-weight: 600;
+        color: #000000;
+        border-radius: 30px;
+    }
+
+    .paper {
+        background: #0268d3;
+    }
+
+    .company-action {
+        margin-left: auto;
+        display: flex;
+        width: 155px;
+        flex-direction: column;
+        gap: 15px;
+
+        button {
+            border: none;
+            font-weight: 600;
+            border-radius: 32px;
+            color: #FFFFFF;
+            background: #322153;
+            display: flex;
+            align-items: center;
+            transition: 0.2s;
+            gap: 8px;
+
+            &:hover {
+                transform: scale(1.1);
+            }
+        }
+    }
+
+    @media screen and (max-width: 875px) {
+        .company-info {
+            flex-direction: column;
+        }
+
+        .company-badge {
+            justify-content: center;
+        }
+
+        .company-status {
+            text-align: center;
+        }
+
+        .company-action {
+            width: 100%;
+            flex-direction: row;
+            justify-content: center;
+            margin: 0 auto;
+        }
+    }
+}

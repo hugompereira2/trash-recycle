@@ -94,7 +94,8 @@ const Navbar = () => {
                         :
                         <>
                             {location.pathname == "/register" && <Link to="/">Voltar para Home</Link>}
-                            {location.pathname != "/register" &&
+                            {
+                                location.pathname != "/register" &&
                                 <>
                                     <Dialog.Root open={showModal} onOpenChange={() => setShowModal(!showModal)}>
                                         <Dialog.Trigger
@@ -122,7 +123,8 @@ const Navbar = () => {
                                         </Dialog.Portal>
                                     </Dialog.Root>
                                     <Link to="/register">Cadastre-se</Link>
-                                </>}
+                                </>
+                            }
                         </>
                 }
             </div>

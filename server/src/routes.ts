@@ -267,78 +267,65 @@ export async function appRoutes(app: FastifyInstance) {
     }
   })
 
-  // app.patch('/habits/:id/toggle', async (request) => {
-  //   const toggleHabitParams = z.object({
-  //     id: z.string().uuid()
-  //   })
+  app.get('/findByMaterial', async (request) => {
+    try {
 
-  //   const { id } = toggleHabitParams.parse(request.params)
+      const createMaterialsBody = z.object({ materials: z.string() });
+      const materialsGetBody = (createMaterialsBody.parse(request.query)).materials;
 
-  //   const today = dayjs().startOf('day').toDate()
+      const materials = materialsGetBody.split(",");
 
-  //   let day = await prisma.day.findUnique({
-  //     where: {
-  //       date: today
-  //     }
-  //   })
+      const user = await prisma.user.findMany({
+        where: {
+          materialUser: {
+            some: {
+              Material: {
+                id: {
+                  in: materials
+                }
+              }
+            }
+          },
+          address_id: {
+            not: null,
+          },
+        },
+        select: {
+          name: true,
+          address: {
+            select: {
+              cep: true,
+              city: true,
+              state: true,
+              district: true,
+              street: true,
+              location: true,
+              street_number: true
+            }
+          },
+          materialUser: {
+            select: {
+              Material: {
+                select: {
+                  id: true,
+                  name: true,
+                  color: true
+                }
+              }
+            }
+          }
+        }
+      });
 
-  //   if (!day) {
-  //     day = await prisma.day.create({
-  //       data: {
-  //         date: today
-  //       }
-  //     })
-  //   }
+      const modifiedUser = user.map((u) => ({
+        ...u,
+        materialUser: u.materialUser.map((mu) => mu.Material)
+      }));
 
-  //   const dayHabit = await prisma.dayHabit.findUnique({
-  //     where: {
-  //       day_id_habit_id: {
-  //         day_id: day.id,
-  //         habit_id: id
-  //       }
-  //     }
-  //   })
+      return modifiedUser;
 
-  //   if (dayHabit) {
-  //     await prisma.dayHabit.delete({
-  //       where: {
-  //         id: dayHabit.id
-  //       }
-  //     })
-  //   } else {
-  //     await prisma.dayHabit.create({
-  //       data: {
-  //         day_id: day.id,
-  //         habit_id: id
-  //       }
-  //     })
-  //   }
-  // })
-
-  // app.get('/summary', async () => {
-  //   const summary = await prisma.$queryRaw`
-  //     SELECT 
-  //       D.id, 
-  //       D.date,
-  //       (
-  //         SELECT 
-  //           cast(count(*) as float)
-  //         FROM day_habits DH
-  //         WHERE DH.day_id = D.id
-  //       ) as completed,
-  //       (
-  //         SELECT
-  //           cast(count(*) as float)
-  //         FROM habit_week_days HDW
-  //         JOIN habits H
-  //           ON H.id = HDW.habit_id
-  //         WHERE
-  //           HDW.week_day = cast(strftime('%w', D.date/1000.0, 'unixepoch') as int)
-  //           AND H.created_at <= D.date
-  //       ) as amount
-  //     FROM days D
-  //   `
-
-  //   return summary
-  // })
+    } catch (error) {
+      return error;
+    }
+  })
 }

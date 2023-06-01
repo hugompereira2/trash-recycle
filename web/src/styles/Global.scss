@@ -53,6 +53,11 @@ html {
     animation: spinner 1s infinite linear;
 }
 
+button:disabled {
+    background: #d1d1d1 !important;
+    cursor: not-allowed;
+}
+
 input:read-only {
     background: #d1d1d1 !important;
     cursor: not-allowed;
