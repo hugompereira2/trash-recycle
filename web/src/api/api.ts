@@ -39,6 +39,12 @@ interface UpdateUser {
     userType_id: string;
 }
 
+interface Solicitation {
+    client_user_id: string;
+    company_user_id: string;
+    materials: string[];
+}
+
 const api = axios.create({
     baseURL: 'http://localhost:3333',
     timeout: 20000,
@@ -67,6 +73,15 @@ export const updateUser = async (payload: UpdateUser) => {
     }
 }
 
+export const createSolicitation = async (payload: Solicitation) => {
+    try {
+        const response = await api.post(`createSolicitation`, payload);
+        return response;
+    } catch (err: any) {
+        return err
+    }
+}
+
 export const findMaterials = async () => {
     try {
         const response = await api.get(`findAllMaterials`);
@@ -76,9 +91,36 @@ export const findMaterials = async () => {
     }
 }
 
+export const changeStatusSolicitation = async (solicitationId: string, status: boolean) => {
+    try {
+        const response = await api.patch(`changeStatusSolicitation/${solicitationId}`, status);
+        return response;
+    } catch (err: any) {
+        return err
+    }
+}
+
+export const finalizeSolicitation = async (solicitationId: string) => {
+    try {
+        const response = await api.patch(`finalizeSolicitation/${solicitationId}`);
+        return response;
+    } catch (err: any) {
+        return err
+    }
+}
+
 export const findCompanyByMaterial = async (material: string) => {
     try {
         const response = await api.get(`findByMaterial?materials=${encodeURIComponent(material)}`);
+        return response;
+    } catch (err: any) {
+        return err
+    }
+}
+
+export const findSolicitations = async (id: string) => {
+    try {
+        const response = await api.get(`findAllSolicitations/${encodeURIComponent(id)}`);
         return response;
     } catch (err: any) {
         return err

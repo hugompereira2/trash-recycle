@@ -32,6 +32,14 @@ html {
     }
 }
 
+.full-height {
+    min-height: 50vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
 .container {
     min-height: 100vh;
     max-width: 1440px;

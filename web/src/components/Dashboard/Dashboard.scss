@@ -10,6 +10,54 @@
         color: #322153;
     }
 
+    .badge {
+        padding: 0.5rem 0.8rem;
+        border-radius: 0.75rem;
+        color: #FFFFFF;
+    }
+
+    .action-container {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    button {
+        display: flex;
+        justify-content: center;
+        width: 100px;
+        transition: 0.2s all;
+
+        &:hover {
+            transform: scale(1.05);
+        }
+    }
+
+    td {
+        font-weight: 600;
+    }
+
+    .yellow {
+        background-color: #ffc107;
+    }
+
+    .blue {
+        background-color: #007bff;
+    }
+
+    .red {
+        background-color: #dc3545;
+    }
+
+    .green {
+        background-color: #28a745;
+    }
+
+    .purple {
+        background-color: #322153;
+    }
+
     .table-container {
         border-radius: 8px;
         padding: 1.5rem;

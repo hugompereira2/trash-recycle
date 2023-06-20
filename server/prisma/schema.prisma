@@ -18,12 +18,41 @@ model User {
   password_hash String
   created_at    DateTime
 
-  userType     UserType       @relation(fields: [userType_id], references: [id])
-  address      Address?       @relation(fields: [address_id], references: [id])
-  materialUser MaterialUser[]
+  userType            UserType           @relation(fields: [userType_id], references: [id])
+  address             Address?           @relation(fields: [address_id], references: [id])
+  materialUser        MaterialUser[]
+  solicitationClient  SolicitationUser[] @relation("ClientUser")
+  SolicitationCompany SolicitationUser[] @relation("CompanyUser")
 
   @@unique([address_id, email])
   @@map("users")
+}
+
+model SolicitationUser {
+  id              String   @id @default(uuid())
+  client_user_id  String
+  company_user_id String
+  active          Boolean? @default(dbgenerated())
+  finalized       Boolean? @default(false)
+  created_at      DateTime @default(now())
+
+  client  User @relation("ClientUser", fields: [client_user_id], references: [id])
+  company User @relation("CompanyUser", fields: [company_user_id], references: [id])
+
+  solicitationMaterial SolicitationMaterial[]
+
+  @@map("solicitationUser")
+}
+
+model SolicitationMaterial {
+  id              String @id @default(uuid())
+  solicitation_id String
+  material_id     String
+
+  solicitationMaterial_user     SolicitationUser @relation(fields: [solicitation_id], references: [id])
+  solicitationMaterial_material Material         @relation(fields: [material_id], references: [id])
+
+  @@map("solicitationMaterial")
 }
 
 model UserType {
@@ -66,7 +95,8 @@ model Material {
   name  String @unique
   color String
 
-  materialUser MaterialUser[]
+  materialUser         MaterialUser[]
+  solicitationMaterial SolicitationMaterial[]
 
   @@map("materials")
 }

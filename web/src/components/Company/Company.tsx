@@ -24,9 +24,11 @@ type materialUser = {
 
 interface ICompany {
     name: string;
+    id: string;
     materialSelected: TypesRecycling[];
     showModal: Dispatch<SetStateAction<boolean>>;
     showDialog: Dispatch<SetStateAction<boolean>>;
+    setSelectedCompany: Dispatch<SetStateAction<string>>;
     setLocation: Dispatch<SetStateAction<[number, number]>>;
     setInitialLocation: Dispatch<SetStateAction<[number, number]>>;
     address: {
@@ -43,7 +45,7 @@ interface ICompany {
 }
 
 const Company = (props: ICompany) => {
-    const { name, address, materialUser, showModal, showDialog, setLocation, setInitialLocation, materialSelected } = props;
+    const { name, id, address, materialUser, showModal, showDialog, setLocation, setInitialLocation, materialSelected, setSelectedCompany } = props;
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -55,32 +57,12 @@ const Company = (props: ICompany) => {
         setLocation(prevLocation => address.location.split(",").map(parseFloat).slice(0, 2) as [number, number]);
     }
 
-    function areArraysEqual(arr1: TypesRecycling[], arr2: materialUser[]) {
-        const ids1 = arr1.map(obj => obj.id);
-        const ids2 = arr2.map(obj => obj.id);
-
-        if (ids1.length !== ids2.length) {
-            return false;
-        }
-
-        const sortedIds1 = [...ids1].sort();
-        const sortedIds2 = [...ids2].sort();
-
-        for (let i = 0; i < sortedIds1.length; i++) {
-            if (sortedIds1[i] !== sortedIds2[i]) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     function materialUserHasAllOptions(materialUser: materialUser[], materialSelected: TypesRecycling[]) {
         return materialSelected.every(selectedOption =>
-          materialUser.some(userOption => userOption.id === selectedOption.id)
+            materialUser.some(userOption => userOption.id === selectedOption.id)
         );
-      }
-      
+    }
+
     return (
         <div id="company">
             <div className="company-info">
@@ -101,7 +83,13 @@ const Company = (props: ICompany) => {
                     <span className="state">{`${address.city}/${address.state}`}</span>
                 </div>
                 <div className="company-action">
-                    <button disabled={!materialUserHasAllOptions(materialUser, materialSelected)} onClick={() => showDialog(true)}> <PaperPlaneTilt size={30} color="#e9e9e9" />Solicitar</button>
+                    <button
+                        disabled={!materialUserHasAllOptions(materialUser, materialSelected)}
+                        onClick={() => {
+                            showDialog(true)
+                            setSelectedCompany(id)
+                        }}>
+                        <PaperPlaneTilt size={30} color="#e9e9e9" />Solicitar</button>
                     <button onClick={() => handleShowMap()}> <MapPin size={30} color="#e9e9e9" />Ver mapa</button>
                 </div>
             </div>

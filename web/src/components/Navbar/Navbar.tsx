@@ -1,17 +1,20 @@
 import logo from '../../assets/logo.svg';
-import { CaretDown, Plus, SignOut, UserCircle, UserSquare, X } from "phosphor-react";
+import { CaretDown, List, Plus, SignOut, UserCircle, UserSquare, X } from "phosphor-react";
 import * as Dialog from '@radix-ui/react-dialog';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import userContext from '../../context/userContext'
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useWindowSize } from '@react-hook/window-size';
 import LoginForm from "../LoginForm/LoginForm";
 import "./Navbar.scss";
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState, useContext, useRef } from "react";
 
 const Navbar = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [userStorage, setUserStorage] = useState();
+    const [windowWidth, windowHeight] = useWindowSize();
+    const [isMobile, setIsMobile] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [error, setError] = useState<string>("");
 
@@ -39,28 +42,21 @@ const Navbar = () => {
         navigate("/");
     }
 
-    // useEffect(() => {
-    //     const userStringfy = localStorage.getItem("user");
-
-    //     if (userStringfy) {
-    //         setUser(JSON.parse(userStringfy));
-    //     }
-    // }, [showModal])
+    useEffect(() => {
+        setIsMobile(windowWidth < 650);
+    }, [windowHeight, windowWidth]);
 
     return (
         <div id="navbar">
             <div className="logo-dasboard">
                 <img src={logo} className="logo" alt="logo" onClick={GoHome} />
-                {
-                    Object.keys(user).length > 0 && user.userType_id == "975791b6-e2c6-465f-848b-852811563230" &&
-                    <span className={`${location.pathname == "/dashboard" ? "active-page" : ""} `} onClick={GoDashboard}>Dashboard</span>
-                }
+                <span className={`${location.pathname == "/dashboard" ? "active-page" : ""} `} onClick={GoDashboard}>Dashboard</span>
                 {
                     Object.keys(user).length > 0 && user.userType_id == "7635808d-3f19-4543-ad4b-9390bd4b3770" &&
                     <span className={`${location.pathname == "/solicitacao" ? "active-page" : ""} `} onClick={GoRequisition}>Solicitação</span>
                 }
             </div>
-            <div className={`navbar-options ${Object.keys(user).length > 0 ? "" : ""}`}>
+            <div className={`navbar-options${Object.keys(user).length > 0 ? "" : ""}`}>
                 {
                     Object.keys(user).length > 0 ?
                         <>

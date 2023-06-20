@@ -233,11 +233,132 @@ export async function appRoutes(app: FastifyInstance) {
     }
   })
 
+  app.post('/createSolicitation', async (request) => {
+    try {
+      const createSolicitationBody = z.object({
+        client_user_id: z.string(),
+        company_user_id: z.string(),
+        materials: z.string().array()
+      })
+
+      const solicitationBody = createSolicitationBody.parse(request.body)
+
+      const solicitation = await prisma.solicitationUser.create({
+        data: {
+          client_user_id: solicitationBody.client_user_id,
+          company_user_id: solicitationBody.company_user_id
+        }
+      })
+
+      await Promise.all(
+        solicitationBody.materials.map(async (material) => {
+          await prisma.solicitationMaterial.create({
+            data: {
+              solicitation_id: solicitation.id,
+              material_id: material,
+            },
+          })
+        })
+      );
+
+      return "sucesso";
+
+    } catch (error) {
+      return error;
+    }
+  })
+
   app.get('/findAllMaterials', async () => {
     try {
       const materials = await prisma.material.findMany();
 
       return materials;
+
+    } catch (error) {
+      return error;
+    }
+  })
+
+  app.get('/findAllSolicitations/:id', async (request) => {
+    try {
+      const createSolicitationBody = z.object({ id: z.string() });
+      const solicitationBody = createSolicitationBody.parse(request.params);
+
+      let solicitations;
+
+      solicitations = await prisma.solicitationUser.findMany({
+        where: {
+          client_user_id: solicitationBody.id
+        },
+        select: {
+          client_user_id: true,
+          id: true,
+          created_at: true,
+          active: true,
+          finalized: true,
+          company: {
+            select: {
+              name: true,
+              id: true,
+              address: {
+                select: {
+                  cep: true,
+                  city: true,
+                  state: true,
+                  district: true,
+                  street: true,
+                  location: true,
+                  street_number: true
+                }
+              },
+            }
+          }
+        },
+        orderBy: [
+          { finalized: "asc" },
+          { active: "asc" },
+          { created_at: "asc" },
+        ]
+      })
+
+      if (solicitations.length == 0) {
+        solicitations = await prisma.solicitationUser.findMany({
+          where: {
+            company_user_id: solicitationBody.id
+          },
+          select: {
+            client_user_id: true,
+            id: true,
+            created_at: true,
+            active: true,
+            finalized: true,
+            client: {
+              select: {
+                name: true,
+                id: true,
+                address: {
+                  select: {
+                    cep: true,
+                    city: true,
+                    state: true,
+                    district: true,
+                    street: true,
+                    location: true,
+                    street_number: true
+                  }
+                },
+              }
+            }
+          },
+          orderBy: [
+            { finalized: "asc" },
+            { active: "asc" },
+            { created_at: "asc" },
+          ]
+        })
+      }
+
+      return solicitations;
 
     } catch (error) {
       return error;
@@ -259,6 +380,57 @@ export async function appRoutes(app: FastifyInstance) {
       if (user) {
         return false;
       }
+
+      return true;
+
+    } catch (error) {
+      return error;
+    }
+  })
+
+  app.patch('/changeStatusSolicitation/:id', async (request) => {
+    try {
+
+      const createIdStatusBody = z.object({ id: z.string() });
+      const createChangeStatusBody = z.boolean();
+
+      const idStatusBody = (createIdStatusBody.parse(request.params)).id;
+      const changeStatusBody = createChangeStatusBody.parse(request.body);
+
+      await prisma.solicitationUser.update({
+        where: {
+          id: idStatusBody
+        },
+        data: {
+          ...(!changeStatusBody && {
+            finalized: true
+          }),
+          active: changeStatusBody
+        }
+      })
+
+      return true;
+
+    } catch (error) {
+      return error;
+    }
+  })
+
+  app.patch('/finalizeSolicitation/:id', async (request) => {
+    try {
+
+      const createIdStatusBody = z.object({ id: z.string() });
+
+      const idStatusBody = (createIdStatusBody.parse(request.params)).id;
+
+      await prisma.solicitationUser.update({
+        where: {
+          id: idStatusBody
+        },
+        data: {
+          finalized: true
+        }
+      })
 
       return true;
 
@@ -292,6 +464,7 @@ export async function appRoutes(app: FastifyInstance) {
         },
         select: {
           name: true,
+          id: true,
           address: {
             select: {
               cep: true,

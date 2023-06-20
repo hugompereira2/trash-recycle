@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import RecycleIcon from '../../assets/recycle_icon.svg';
-import { findMaterials, findCompanyByMaterial } from "../../api/api";
+import { findMaterials, findCompanyByMaterial, createSolicitation } from "../../api/api";
 import * as Dialog from '@radix-ui/react-dialog';
 import { X } from "phosphor-react";
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
+import { getLocalStorageUser } from "../../utils/utils"
 import { useForm } from "react-hook-form";
 import "./Requisition.scss";
+import { toast } from "react-toastify";
 import iconImg from 'leaflet/dist/images/marker-icon.png';
 import * as AlertDialog from '@radix-ui/react-alert-dialog';
 import L from "leaflet";
@@ -41,6 +43,7 @@ type TypesRecycling = {
 
 interface ICompany {
     name: string;
+    id: string;
     address: {
         id: string;
         cep: string;
@@ -64,13 +67,14 @@ const Requisition = () => {
     const [foundCompany, setFoundCompany] = useState<ICompany[]>([]);
     const [initialPosition, setInitialPosition] = useState<[number, number]>([0, 0]);
     const [selectedPosition, setSelectedPosition] = useState<[number, number]>([0, 0]);
+    const [selectedCompany, setSelectedCompany] = useState<string>("");
     const [showModal, setShowModal] = useState(false);
     const [showDialog, setShowDialog] = useState(false);
 
     const { register, reset, clearErrors, setValue, handleSubmit, setError, formState: { errors } } = useForm<IUser>();
 
     const navigate = useNavigate();
-    const location = useLocation();
+    const user = getLocalStorageUser();
 
     const getMaterials = async () => {
         const { data } = await findMaterials();
@@ -88,8 +92,8 @@ const Requisition = () => {
         })
 
         const { data } = await findCompanyByMaterial(filteredMaterials);
-        setFoundCompany(data);
 
+        setFoundCompany(data);
     }
 
     function LocationMarker() {
@@ -110,6 +114,32 @@ const Requisition = () => {
         return icon;
     }
 
+    const handleConfirm = async () => {
+
+        const filteredMaterials: string[] = [];
+
+        typesRecycling.map((material, index) => {
+            if (material.selected) {
+                filteredMaterials.push(material.id);
+            }
+        })
+
+        const payload = {
+            client_user_id: user!.id,
+            company_user_id: selectedCompany,
+            materials: filteredMaterials
+        }
+
+        const resp = await createSolicitation(payload);
+        
+        if (resp?.status == 200) {
+            toast.success("Solicitacão enviada!", { autoClose: 2000, });
+            navigate("/dashboard");
+
+        } else {
+            toast.error(`Error: ${resp.code}`, { autoClose: 2000, });
+        }
+    };
 
     const handleSelectItem = (name: string) => {
         setTypesRecycling(prevTypesRecycling => {
@@ -130,12 +160,14 @@ const Requisition = () => {
     }
 
     useEffect(() => {
-        getCompanyByMaterials();
-    }, [typesRecycling])
-
-    useEffect(() => {
         getMaterials();
     }, [])
+
+    useEffect(() => {
+        if (typesRecycling.length > 0) {
+            getCompanyByMaterials();
+        }
+    }, [typesRecycling])
 
     return (
         <div id="requisition">
@@ -163,7 +195,6 @@ const Requisition = () => {
                     </Dialog.Content>
                 </Dialog.Portal>
             </Dialog.Root>
-
             <AlertDialog.Root open={showDialog} onOpenChange={() => setShowDialog(!showDialog)}>
                 <AlertDialog.Portal>
                     <AlertDialog.Overlay className="dialog-overlay" />
@@ -172,14 +203,18 @@ const Requisition = () => {
                             Solicitação
                         </AlertDialog.Title>
                         <AlertDialog.Description className="dialog-black-text">
-                            This action cannot be undone. This will permanently delete your account and remove your
-                            data from our servers.
+                            Por favor, confirme sua solicitação.
+                            <br /><br />
+                            Tenha em mente que a empresa pode estar ocupada atendendo outras solicitações.
+                            Iremos avaliar a possibilidade de aceitar ou recusar o seu pedido de acordo com
+                            a nossa disponibilidade.
+                            <br /><br /> Agradecemos sua compreensão e flexibilidade!
                         </AlertDialog.Description>
                         <div className="dialog-button-footer">
                             <AlertDialog.Cancel onClick={() => setShowDialog(!showDialog)} className="cancel-button">
                                 Cancelar
                             </AlertDialog.Cancel>
-                            <AlertDialog.Action>
+                            <AlertDialog.Action onClick={handleConfirm} className="confirm-button">
                                 Confirmar
                             </AlertDialog.Action>
                         </div>
@@ -212,11 +247,12 @@ const Requisition = () => {
                             <h3 className="collection-item-title">Empresas</h3>
                             <div className="table-container">
                                 {
-                                    foundCompany.map((item, index) => {
+                                    foundCompany.map((item: ICompany) => {
                                         return (
                                             <Company
-                                                key={index}
+                                                key={item.id}
                                                 name={item.name}
+                                                id={item.id}
                                                 showModal={setShowModal}
                                                 showDialog={setShowDialog}
                                                 materialUser={item.materialUser}
@@ -224,6 +260,7 @@ const Requisition = () => {
                                                 materialSelected={typesRecycling.filter((item) => item.selected == true)}
                                                 setLocation={setSelectedPosition}
                                                 setInitialLocation={setInitialPosition}
+                                                setSelectedCompany={setSelectedCompany}
                                             />
                                         )
                                     })

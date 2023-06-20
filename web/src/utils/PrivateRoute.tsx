@@ -9,8 +9,6 @@ function checkUser(user: any, outletLocation: string): boolean {
     switch (outletLocation) {
         case "/register":
             return true;
-        case "/dashboard":
-            return user.userType_id === "7635808d-3f19-4543-ad4b-9390bd4b3770";
         case "/solicitacao":
             return user.userType_id === "975791b6-e2c6-465f-848b-852811563230";
         default:

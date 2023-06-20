@@ -12,6 +12,7 @@
     "@radix-ui/react-alert-dialog": "^1.0.4",
     "@radix-ui/react-dialog": "^1.0.2",
     "@radix-ui/react-dropdown-menu": "^2.0.2",
+    "@react-hook/window-size": "^3.1.1",
     "axios": "^1.2.3",
     "leaflet": "^1.9.3",
     "phosphor-react": "^1.4.1",
