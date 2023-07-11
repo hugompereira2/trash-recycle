@@ -1,4 +1,4 @@
-<h1 align="center"> Clean World | Full-Stack </h1>
+<h1 align="center"> Trash Recycle | Full-Stack </h1>
 
 <div align="center">
   <sub> Made with 💖 by
