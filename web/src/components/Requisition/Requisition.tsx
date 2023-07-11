@@ -6,7 +6,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { X } from "phosphor-react";
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import { getLocalStorageUser } from "../../utils/utils"
-import { useForm } from "react-hook-form";
+import { useFieldArray, useForm, SubmitHandler, get } from "react-hook-form";
 import "./Requisition.scss";
 import { toast } from "react-toastify";
 import iconImg from 'leaflet/dist/images/marker-icon.png';
@@ -41,6 +41,10 @@ type TypesRecycling = {
     selected: boolean;
 }
 
+type TypesRecyclingValue = {
+    [key: string]: string;
+}
+
 interface ICompany {
     name: string;
     id: string;
@@ -68,10 +72,13 @@ const Requisition = () => {
     const [initialPosition, setInitialPosition] = useState<[number, number]>([0, 0]);
     const [selectedPosition, setSelectedPosition] = useState<[number, number]>([0, 0]);
     const [selectedCompany, setSelectedCompany] = useState<string>("");
+    const [loading, setLoading] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [showDialog, setShowDialog] = useState(false);
 
     const { register, reset, clearErrors, setValue, handleSubmit, setError, formState: { errors } } = useForm<IUser>();
+
+    const { register: register2, reset: reset2, clearErrors: clearErrors2, setValue: setValue2, control, handleSubmit: handleSubmit2, setError: setError2, formState: { errors: errors2 } } = useForm<TypesRecyclingValue>({ mode: "onChange" });
 
     const navigate = useNavigate();
     const user = getLocalStorageUser();
@@ -114,24 +121,22 @@ const Requisition = () => {
         return icon;
     }
 
-    const handleConfirm = async () => {
+    const onSubmitSolicitation: SubmitHandler<TypesRecyclingValue> = async (data) => {
+        setLoading(true);
 
-        const filteredMaterials: string[] = [];
-
-        typesRecycling.map((material, index) => {
-            if (material.selected) {
-                filteredMaterials.push(material.id);
-            }
-        })
+        const typesRecycling = Object.entries(data).map(([id, amount]) => ({
+            id,
+            amount,
+        }));
 
         const payload = {
             client_user_id: user!.id,
             company_user_id: selectedCompany,
-            materials: filteredMaterials
+            materials: typesRecycling
         }
 
         const resp = await createSolicitation(payload);
-        
+
         if (resp?.status == 200) {
             toast.success("Solicitacão enviada!", { autoClose: 2000, });
             navigate("/dashboard");
@@ -139,7 +144,9 @@ const Requisition = () => {
         } else {
             toast.error(`Error: ${resp.code}`, { autoClose: 2000, });
         }
-    };
+
+        console.log(typesRecycling)
+    }
 
     const handleSelectItem = (name: string) => {
         setTypesRecycling(prevTypesRecycling => {
@@ -202,22 +209,45 @@ const Requisition = () => {
                         <AlertDialog.Title className="dialog-title">
                             Solicitação
                         </AlertDialog.Title>
-                        <AlertDialog.Description className="dialog-black-text">
-                            Por favor, confirme sua solicitação.
-                            <br /><br />
-                            Tenha em mente que a empresa pode estar ocupada atendendo outras solicitações.
+                        <form className="dialog-black-text" onSubmit={handleSubmit2(onSubmitSolicitation)}>
+                            Por favor, informe o peso em kilo.
+                            {
+                                typesRecycling.length > 0 && typesRecycling.map((type) => {
+                                    if (type.selected) {
+                                        return (
+                                            <div key={type.color} className="row centered-row">
+                                                <span className="badge" style={{ background: `${type.color}` }}>{type.name}</span>
+                                                <input
+                                                    {...register2(`${type.id}`, {
+                                                        required: true,
+                                                    })}
+                                                    type="number"
+                                                    min={0.5}
+                                                    className="input-solicitation"
+                                                    step={0.1}
+                                                    required
+                                                />
+                                                <span>KG</span>
+                                            </div>
+                                        )
+                                    }
+                                })
+                            }
                             Iremos avaliar a possibilidade de aceitar ou recusar o seu pedido de acordo com
                             a nossa disponibilidade.
                             <br /><br /> Agradecemos sua compreensão e flexibilidade!
-                        </AlertDialog.Description>
-                        <div className="dialog-button-footer">
-                            <AlertDialog.Cancel onClick={() => setShowDialog(!showDialog)} className="cancel-button">
-                                Cancelar
-                            </AlertDialog.Cancel>
-                            <AlertDialog.Action onClick={handleConfirm} className="confirm-button">
-                                Confirmar
-                            </AlertDialog.Action>
-                        </div>
+                            <div className="dialog-button-footer">
+                                <button onClick={() => {
+                                    setShowDialog(!showDialog)
+                                    reset2();
+                                }} className="cancel-button">
+                                    Cancelar
+                                </button>
+                                <button type="submit" className="confirm-button">
+                                    Confirmar
+                                </button>
+                            </div>
+                        </form>
                     </AlertDialog.Content>
                 </AlertDialog.Portal>
             </AlertDialog.Root>

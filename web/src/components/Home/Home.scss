@@ -18,6 +18,7 @@
     }
 
     .img-container {
+        max-height: 500px;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -30,13 +31,13 @@
     }
 
     .home-title {
-        color: #322153;
+        color: var(--purple-text);
         font-size: 3.375rem;
         line-height: 5.0625rem;
     }
 
     .home-subtitle {
-        color: #322153;
+        color: var(--purple-text);
         font-size: 1.5rem;
         line-height: 2.5rem;
     }
@@ -48,14 +49,14 @@
         border-radius: 0.5rem;
         text-transform: uppercase;
         font-family: "Open Sans", sans-serif;
-        background: #28e289;
+        background: var(--green-button);
         font-size: 1.2rem;
         height: 72px;
         width: 100%;
         margin-right: auto;
         max-width: 360px;
         font-weight: 600;
-        color: white;
+        color: black;
 
         strong {
             height: 100%;
@@ -75,6 +76,10 @@
             height: 100%;
             background: inherit;
         }
+    }
+
+    @media screen and (min-width: 1500px) {
+        padding: 5rem 4rem;
     }
 
     @media screen and (max-width: 960px) {

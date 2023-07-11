@@ -89,8 +89,8 @@ const Company = (props: ICompany) => {
                             showDialog(true)
                             setSelectedCompany(id)
                         }}>
-                        <PaperPlaneTilt size={30} color="#e9e9e9" />Solicitar</button>
-                    <button onClick={() => handleShowMap()}> <MapPin size={30} color="#e9e9e9" />Ver mapa</button>
+                        <PaperPlaneTilt size={30} color="var(--weak-white)" />Solicitar</button>
+                    <button onClick={() => handleShowMap()}> <MapPin size={30} color="var(--weak-white)" />Ver mapa</button>
                 </div>
             </div>
         </div>

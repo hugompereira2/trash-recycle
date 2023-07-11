@@ -14,11 +14,6 @@ import { toast } from "react-toastify";
 import L from "leaflet";
 import { useTable, TableOptions, Column } from "react-table";
 
-// interface ReactTableProps<T extends object> {
-//     data: T[];
-//     columns: Column<T>[];
-// }
-
 interface CompanyAddress {
     cep: string;
     city: string;
@@ -27,6 +22,14 @@ interface CompanyAddress {
     street: string;
     location: string;
     street_number: string;
+}
+
+interface solicitationMaterial {
+    id: string;
+    solicitation_id: string;
+    clientName?: string;
+    amount: number;
+    material: { name: string, color: string }
 }
 
 interface solicitationProps {
@@ -57,6 +60,7 @@ interface solicitationProps {
         created_at: string;
         address: CompanyAddress;
     };
+    solicitationMaterial: solicitationMaterial[];
 }
 
 interface SolicitationData {
@@ -70,7 +74,9 @@ interface SolicitationData {
 const Dashboard = () => {
     const [solicitations, setSolicitations] = useState([]);
     const [data, setData] = useState<SolicitationData[]>([]);
+    const [material, setMaterial] = useState<solicitationMaterial[]>([]);
     const [showModal, setShowModal] = useState<boolean>(false);
+    const [pfUser, setPfUser] = useState<boolean>(false);
     const [initialPosition, setInitialPosition] = useState<[number, number]>([0, 0]);
     const [selectedPosition, setSelectedPosition] = useState<[number, number]>([0, 0]);
 
@@ -86,6 +92,7 @@ const Dashboard = () => {
 
     useEffect(() => {
         getSolicitations();
+        setPfUser(user?.userType_id === "7635808d-3f19-4543-ad4b-9390bd4b3770")
     }, [])
 
     function handleStatus(status: boolean | null, finalized: boolean): React.ReactNode {
@@ -147,19 +154,23 @@ const Dashboard = () => {
         setSelectedPosition(prevLocation => location.split(",").map(parseFloat).slice(0, 2) as [number, number]);
     }
 
-    function handleActions(locationOrID: string | null, status: boolean | null, finalized: boolean): React.ReactNode {
+    const handleShowModal = (solicitationMaterial: solicitationMaterial[], clientName: string) => {
+        solicitationMaterial[0].clientName = clientName;
+        setMaterial(solicitationMaterial);
+
+        setShowModal(true)
+    }
+
+    function handleActions(locationOrID: string | null, status: boolean | null, finalized: boolean, solicitationMaterial: solicitationMaterial[], clientName: string): React.ReactNode {
         let actionButton1: React.ReactNode;
         let actionButton2: React.ReactNode;
 
-        if (user?.userType_id === "7635808d-3f19-4543-ad4b-9390bd4b3770") {
+        if (pfUser) {
             actionButton1 = <button onClick={() => handleShowMap(locationOrID!)} className="purple">Mapa</button>;
         } else {
+            actionButton1 = <button disabled={finalized} onClick={() => handleShowModal(solicitationMaterial, clientName)} className="purple">Visualizar</button>;
             if (!finalized && status) {
                 actionButton1 = <button onClick={() => handleFinalizeSolictation(locationOrID!)} className="blue">Finalizar</button>;
-            }
-            else {
-                actionButton1 = <button disabled={finalized} onClick={() => handleChangeStatus(locationOrID!, true)} className="green">Aprovar</button>;
-                actionButton2 = <button disabled={finalized} onClick={() => handleChangeStatus(locationOrID!, false)} className="red">Recusar</button>;
             }
         }
 
@@ -182,7 +193,9 @@ const Dashboard = () => {
                     col5: handleActions((
                         solicitation.company?.address?.location || solicitation.id),
                         solicitation.active,
-                        solicitation.finalized
+                        solicitation.finalized,
+                        solicitation.solicitationMaterial,
+                        solicitation.client?.name
                     )
                 }))
             );
@@ -248,24 +261,63 @@ const Dashboard = () => {
                 <Dialog.Root open={showModal} onOpenChange={() => setShowModal(!showModal)}>
                     <Dialog.Portal>
                         <Dialog.Overlay className="dialog-overlay" />
-
                         <Dialog.Content className="dialog-content dialog-content-map">
-                            <Dialog.Close className="dialog-close">
+                            <Dialog.Close className="dialog-close" onClick={(e) => setMaterial([])}>
                                 <X size={24} aria-label="Fechar" />
                             </Dialog.Close>
-
                             <Dialog.Title className="dialog-title">
-                                Mapa
+                                {
+                                    material.length > 0
+                                        ?
+                                        <>
+                                            Solicitação
+                                            <small>{material[0].clientName}</small>
+                                        </>
+                                        : 'Mapa'
+                                }
                             </Dialog.Title>
-                            <div className="map-container">
-                                <MapContainer center={initialPosition} zoom={15}>
-                                    <TileLayer
-                                        attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-                                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                                    <Marker position={selectedPosition} icon={getMarkerIcon()} />
-                                    <LocationMarker />
-                                </MapContainer>
-                            </div>
+                            {
+                                material.length > 0 ?
+                                    <div className="dialog-black-text">
+                                        <div className="card-deck">
+                                            {
+                                                material.map((solicitation) => {
+                                                    return (
+                                                        <div key={solicitation.id} className="card-recycle" style={{ background: `${solicitation.material.color}` }}>
+                                                            <h2>{solicitation.material.name}</h2>
+                                                            <strong>{solicitation.amount.toString().replace('.', ',')}</strong>
+                                                            <span>KG</span>
+                                                        </div>
+                                                    )
+                                                })
+                                            }
+                                        </div>
+                                        <br /><br />
+                                        <div className="dialog-button-footer">
+                                            <button onClick={() => {
+                                                handleChangeStatus(material[0].solicitation_id, false)
+                                                setShowModal(false)
+                                            }} className="cancel-button">
+                                                Recusar
+                                            </button>
+                                            <button onClick={() => {
+                                                handleChangeStatus(material[0].solicitation_id, true)
+                                                setShowModal(false)
+                                            }} className="confirm-button">
+                                                Aprovar
+                                            </button>
+                                        </div>
+                                    </div> :
+                                    <div className="map-container">
+                                        <MapContainer center={initialPosition} zoom={15}>
+                                            <TileLayer
+                                                attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                                            <Marker position={selectedPosition} icon={getMarkerIcon()} />
+                                            <LocationMarker />
+                                        </MapContainer>
+                                    </div>
+                            }
                         </Dialog.Content>
                     </Dialog.Portal>
                 </Dialog.Root>
@@ -319,7 +371,7 @@ const Dashboard = () => {
                         :
                         <div className="full-height">
                             <h4>Nenhuma solicitação encontrada.</h4>
-                            <SmileySad size={80} color="#636363" />
+                            <SmileySad size={80} color="var(--grey-text)" />
                         </div>
                 }
             </div>

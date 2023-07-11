@@ -3,12 +3,13 @@ import InputMask from "react-input-mask";
 import { toast } from "react-toastify";
 import "./Profile.scss";
 import { useEffect, useState, useContext, ChangeEvent } from "react";
-import { updateUser, findCep, findMaterials } from "../../api/api";
+import { updateUser, findCep, findMaterials, validateCnpj as getValidateCnpj, validateCpf as getValidateCpf, validateCpf } from "../../api/api";
 import userContext from '../../context/userContext';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import RecycleIcon from '../../assets/recycle_icon.svg';
 import L from 'leaflet';
 import iconImg from 'leaflet/dist/images/marker-icon.png';
+import { formatCPF, formatCnpj, formatPhoneNumber, validateCPF, validateCnpj } from "../../utils/utils";
 
 interface IAddress {
     cep: string;
@@ -47,7 +48,7 @@ const Profile = () => {
 
     const { user, setUser } = useContext(userContext);
 
-    const { register, setValue, reset, clearErrors, handleSubmit, watch, formState: { errors } } = useForm<IUser>();
+    const { register, setValue, reset, clearErrors, handleSubmit, setError, watch, formState: { errors } } = useForm<IUser>();
 
     const onSubmit = async (data: IUser) => {
 
@@ -147,6 +148,69 @@ const Profile = () => {
         )
     }
 
+    const handleCnpjInput = async (value: string) => {
+        const cnpj_cpf = formatCnpj(value);
+
+        register('cnpj_cpf', { required: true, pattern: /^.{18}$/, })
+        setValue('cnpj_cpf', cnpj_cpf);
+
+        const cnpj_cpf_clean = value?.replaceAll("_", "");
+        const isValid = validateCnpj(cnpj_cpf_clean);
+
+        if (cnpj_cpf.length == 18) {
+            if (!isValid) {
+                setError('cnpj_cpf', { type: 'custom', message: 'CNPJ inválido!' });
+                return
+            }
+
+            const clearCnpj = cnpj_cpf.replace(/\D/g, "");
+            const { data: canRegisterCnpj } = await getValidateCnpj(clearCnpj);
+
+            if (!canRegisterCnpj) {
+                setError('cnpj_cpf', { type: 'custom', message: 'CNPJ já cadastrado!' });
+                return
+            }
+            clearErrors('cnpj_cpf');
+        }
+    }
+
+    const handleCpfInput = async (value: string) => {
+        const cnpj_cpf = formatCPF(value);
+
+        register('cnpj_cpf', { required: true, pattern: /^.{14}$/, })
+        setValue('cnpj_cpf', cnpj_cpf);
+
+        const cnpj_cpf_clean = value?.replaceAll("_", "");
+        const isValid = validateCPF(cnpj_cpf_clean);
+
+        if (cnpj_cpf.length == 14) {
+            if (!isValid) {
+                setError('cnpj_cpf', { type: 'custom', message: 'CPF inválido!' });
+                return
+            }
+
+            const clearCpf = cnpj_cpf.replace(/\D/g, "");
+            const { data: canRegisterCpf } = await getValidateCpf(clearCpf);
+
+            if (!canRegisterCpf) {
+                setError('cnpj_cpf', { type: 'custom', message: 'CPF já cadastrado!' });
+                return
+            }
+            clearErrors('cnpj_cpf');
+        }
+    }
+
+    const handleWhatsInput = async (value: string) => {
+        const whatsapp = formatPhoneNumber(value);
+
+        register('whatsapp', {
+            required: true,
+            pattern: /^.{14,15}$/,
+        })
+
+        setValue('whatsapp', whatsapp);
+    }
+
     useEffect(() => {
         if (Object.keys(user).length > 0) {
 
@@ -197,8 +261,12 @@ const Profile = () => {
                         </div>
                         <div className="input-group">
                             <label className="label-title">{userForm?.userType_id == pj ? "CNPJ" : "CPF"}</label>
-                            <InputMask {...register('cnpj_cpf', { required: true })} mask={mask} type="text" className="input-text" />
-                            {errors.cnpj_cpf && <span className="error-message">Campo obrigatório</span>}
+                            <input
+                                {...register('cnpj_cpf', { required: true })}
+                                onChange={(e) => { userForm?.userType_id == pj ? handleCnpjInput(e.target.value) : handleCpfInput(e.target.value) }}
+                                type="text"
+                                className="input-text" />
+                            {errors.cnpj_cpf && <span className="error-message">{errors.cnpj_cpf.message || 'Campo obrigatório'}</span>}
                         </div>
                     </div>
                     <div className="row">
@@ -209,8 +277,17 @@ const Profile = () => {
                         </div>
                         <div className="input-group">
                             <label className="label-title">Whatsapp</label>
-                            <InputMask {...register('whatsapp', { required: true })} mask={"(99) 99999-9999"} type="text" className="input-text" />
-                            {errors.whatsapp && <span className="error-message">Campo obrigatório</span>}
+                            <input
+                                {...register('whatsapp', {
+                                    required: true,
+                                    pattern: /^.{14,15}$/,
+                                })}
+                                onChange={(e) => handleWhatsInput(e.target.value)}
+                                type="text"
+                                maxLength={15}
+                                className="input-text"
+                            />
+                            {errors.whatsapp && <span className="error-message">{errors.whatsapp.message || 'Campo obrigatório'}</span>}
                         </div>
                     </div>
                     {

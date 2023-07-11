@@ -11,8 +11,9 @@ import iconImg from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 import RecycleIcon from '../../assets/recycle_icon.svg';
 import "./RegisterForm.scss"
-import { registerUser, findMaterials, findCep, validateEmail } from "../../api/api";
+import { registerUser, findMaterials, findCep, validateEmail, validateCnpj as getValidateCnpj, validateCpf as getValidateCpf } from "../../api/api";
 import { CircleNotch } from "phosphor-react";
+import { validateCnpj, validateCPF, formatCnpj, formatCPF, formatPhoneNumber } from "../../utils/utils";
 
 interface IRegister {
     type: string,
@@ -62,6 +63,7 @@ const RegisterForm = (props: IRegister) => {
     const { register, reset, clearErrors, setValue, handleSubmit, setError, formState: { errors } } = useForm<IUser>();
 
     const onSubmit = async (data: IUser) => {
+        console.log(errors)
         setLoading(true);
         const payload = {
             ...data,
@@ -155,6 +157,72 @@ const RegisterForm = (props: IRegister) => {
         setValue("email", value)
     }
 
+    const handleCnpjInput = async (value: string) => {
+        const cnpj_cpf = formatCnpj(value);
+
+        register('cnpj_cpf', { required: true, pattern: /^.{18}$/, })
+        setValue('cnpj_cpf', cnpj_cpf);
+
+        const cnpj_cpf_clean = value?.replaceAll("_", "");
+        const isValid = validateCnpj(cnpj_cpf_clean);
+
+        if (cnpj_cpf.length == 18) {
+            if (!isValid) {
+                setError('cnpj_cpf', { type: 'custom', message: 'CNPJ inválido!' });
+                return
+            }
+
+            const clearCnpj = cnpj_cpf.replace(/\D/g, "");
+            const { data: canRegisterCnpj } = await getValidateCnpj(clearCnpj);
+
+            if (!canRegisterCnpj) {
+                setError('cnpj_cpf', { type: 'custom', message: 'CNPJ já cadastrado!' });
+                return
+            }
+            clearErrors('cnpj_cpf');
+        }
+    }
+
+    const handleCpfInput = async (value: string) => {
+        const cnpj_cpf = formatCPF(value);
+
+        register('cnpj_cpf', { required: true, pattern: /^.{14}$/, })
+        setValue('cnpj_cpf', cnpj_cpf);
+
+        const cnpj_cpf_clean = value?.replaceAll("_", "");
+        const isValid = validateCPF(cnpj_cpf_clean);
+
+        if (cnpj_cpf.length == 14) {
+            if (!isValid) {
+                setError('cnpj_cpf', { type: 'custom', message: 'CPF inválido!' });
+                return
+            }
+
+            const clearCpf = cnpj_cpf.replace(/\D/g, "");
+            const { data: canRegisterCpf } = await getValidateCpf(clearCpf);
+
+            if (!canRegisterCpf) {
+                setError('cnpj_cpf', { type: 'custom', message: 'CPF já cadastrado!' });
+                return
+            }
+            clearErrors('cnpj_cpf');
+        }
+    }
+
+    const handleWhatsInput = async (value: string) => {
+        const whatsapp = formatPhoneNumber(value);
+
+        register('whatsapp', {
+            required: true,
+            pattern: /^.{14,15}$/,
+        })
+        setValue('whatsapp', whatsapp);
+
+        if (value.length > 14) {
+            clearErrors('whatsapp');
+        }
+    }
+
     useEffect(() => {
         navigator.geolocation.getCurrentPosition((position) => {
             const { latitude, longitude } = position.coords;
@@ -162,7 +230,6 @@ const RegisterForm = (props: IRegister) => {
         });
         getMaterials();
     }, [])
-
 
     let DefaultIcon = L.icon({
         iconUrl: iconImg,
@@ -212,37 +279,49 @@ const RegisterForm = (props: IRegister) => {
                 <div className="input-group">
                     <label className="label-title">{props.type == "PJ" ? "Nome fantasia" : "Nome completo"}</label>
                     <input {...register('name', { required: true })} type="text" className="input-text" />
-                    {errors.name && <span className="error-message">Campo obrigatório</span>}
+                    {errors.name && <span className="error-message">{errors.name.message || 'Campo obrigatório'}</span>}
                 </div>
                 <div className="input-group">
                     <label className="label-title">{props.type == "PJ" ? "CNPJ" : "CPF"}</label>
-                    <InputMask mask={maskType} defaultValue="______" {...register('cnpj_cpf', { required: true })} type="text" className="input-text" />
-                    {errors.cnpj_cpf && <span className="error-message">Campo obrigatório</span>}
+                    <input
+                        {...register('cnpj_cpf', { required: true })}
+                        onChange={(e) => { props.type == "PJ" ? handleCnpjInput(e.target.value) : handleCpfInput(e.target.value) }}
+                        type="text"
+                        className="input-text" />
+                    {errors.cnpj_cpf && <span className="error-message">{errors.cnpj_cpf.message || 'Campo obrigatório'}</span>}
                 </div>
             </div>
             <div className="row">
                 <div className="input-group">
                     <label className="label-title">E-mail</label>
                     <input
-                        minLength={8}
                         {...register('email', { required: true })}
                         onChange={event => handleEmailInput(event.target.value)}
+                        type="email"
                         className="input-text"
                     />
-                    {/* <input {...register('email', { required: true })} type="email" className="input-text" /> */}
-                    {errors.email && <span className="error-message">{errors?.email.message}</span>}
+                    {errors.email && <span className="error-message">{errors.email?.message || 'Campo obrigatório'}</span>}
                 </div>
                 <div className="input-group">
                     <label className="label-title">Whatsapp</label>
-                    <InputMask mask={"(99) 99999-9999"} {...register('whatsapp', { required: true })} type="text" className="input-text" />
-                    {errors.whatsapp && <span className="error-message">Campo obrigatório</span>}
+                    <input
+                        {...register('whatsapp', {
+                            required: true,
+                            pattern: /^.{14,15}$/,
+                        })}
+                        onChange={(e) => handleWhatsInput(e.target.value)}
+                        maxLength={15}
+                        type="text"
+                        className="input-text"
+                    />
+                    {errors.whatsapp && <span className="error-message">{errors.whatsapp.message || 'Campo obrigatório'}</span>}
                 </div>
             </div>
             <div className="row">
                 <div className="input-group">
                     <label className="label-title">Senha</label>
                     <input {...register('password', { required: true })} type="password" className="input-text" minLength={6} />
-                    {errors.password && <span className="error-message">Campo obrigatório</span>}
+                    {errors.password && <span className="error-message">{errors.password.message || 'Campo obrigatório'}</span>}
                 </div>
             </div>
             {
@@ -253,36 +332,36 @@ const RegisterForm = (props: IRegister) => {
                         <div className="input-group">
                             <label className="label-title">CEP</label>
                             <InputMask mask={"99999-999"} defaultValue="" {...register('address.cep', { required: true })} type="text" className="input-text" onChange={handleSearchCep} />
-                            {errors.address?.cep && <span className="error-message">Campo obrigatório</span>}
+                            {errors.address?.cep && <span className="error-message">{errors.address?.cep.message || 'Campo obrigatório'}</span>}
                         </div>
                         <div className="input-group">
                             <label className="label-title">Rua</label>
                             <input {...register('address.street', { required: true })} disabled type="text" className="input-text" />
-                            {errors.address?.street && <span className="error-message">Campo obrigatório</span>}
+                            {errors.address?.street && <span className="error-message">{errors.address?.street.message || 'Campo obrigatório'}</span>}
                         </div>
                     </div>
                     <div className="row">
                         <div className="input-group">
                             <label className="label-title">Estado(UF)</label>
                             <input {...register('address.state', { required: true })} disabled type="text" className="input-text" />
-                            {errors.address?.state && <span className="error-message">Campo obrigatório</span>}
+                            {errors.address?.state && <span className="error-message">{errors.address?.state.message || 'Campo obrigatório'}</span>}
                         </div>
                         <div className="input-group">
                             <label className="label-title">Cidade</label>
                             <input {...register('address.city', { required: true })} disabled type="text" className="input-text" />
-                            {errors.address?.city && <span className="error-message">Campo obrigatório</span>}
+                            {errors.address?.city && <span className="error-message">{errors.address?.city.message || 'Campo obrigatório'}</span>}
                         </div>
                     </div>
                     <div className="row">
                         <div className="input-group">
                             <label className="label-title">Bairro</label>
                             <input {...register('address.district', { required: true })} disabled type="text" className="input-text" />
-                            {errors.address?.district && <span className="error-message">Campo obrigatório</span>}
+                            {errors.address?.district && <span className="error-message">{errors.address?.district.message || 'Campo obrigatório'}</span>}
                         </div>
                         <div className="input-group">
                             <label className="label-title">Número</label>
                             <input {...register('address.street_number', { required: true })} type="number" className="input-text" />
-                            {errors.address?.street_number && <span className="error-message">Campo obrigatório</span>}
+                            {errors.address?.street_number && <span className="error-message">{errors.address?.street_number.message || 'Campo obrigatório'}</span>}
                         </div>
                     </div>
                 </>
@@ -323,7 +402,7 @@ const RegisterForm = (props: IRegister) => {
                     {errors.materialUser && <span style={{ marginBottom: "20px" }} className="error-message">Obrigatório selecionar um ou mais itens</span>}
                 </>
             }
-            <button type="submit">
+            <button type="submit" disabled={Object.keys(errors).length > 0}>
                 {
                     loading ?
                         <CircleNotch className="spinner" size={30} color="#FFFFFF" />

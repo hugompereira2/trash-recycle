@@ -7,11 +7,11 @@
     h1 {
         font-size: 2rem;
         margin: 0;
-        color: #322153;
+        color: var(--purple-text);
     }
 
     .collection-item-title {
-        color: #322153;
+        color: var(--purple-text);
         display: flex;
         gap: 0.9375rem 1.875rem;
         justify-content: space-between;

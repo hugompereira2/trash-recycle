@@ -1,33 +1,34 @@
 #login-form {
-    padding-top: 2rem;
-    display: flex;
-    justify-content: center;
-    gap: 1.5rem 0;
-    flex-direction: column;
+	padding-top: 2rem;
+	display: flex;
+	justify-content: center;
+	gap: 1.5rem 0;
+	flex-direction: column;
 
-    .input-group {
-        flex: 1 !important;
-    }
+	.input-group {
+		flex: 1 !important;
+	}
 
-    .button-submit {
-        background-color: #28e289;
-        color: black;
-        margin-top: 1.5rem;
+	.button-submit {
+		height: 45px;
+		width: 100%;
+		background-color: var(--green-button);
+		color: black;
+		margin-top: 1.5rem;
 
-        &:hover {
-            background: #3FD3AF !important;
-        }
-    }
+		&:hover {
+			background: #3fd3af !important;
+		}
+	}
 
-    .link {
-        color: #00bd7e;
-        width: 190px;
-        border: none;
-        text-decoration: none;
+	.link {
+		color: #00bd7e;
+		width: 190px;
+		border: none;
+		text-decoration: none;
 
-        &:hover {
-            background: transparent !important;
-        }
-    }
-
+		&:hover {
+			background: transparent !important;
+		}
+	}
 }

@@ -45,7 +45,7 @@ function App() {
           <Route path="/register" element={<ProtectedRoute {...defaultProtectedRouteProps} outlet={<Register />} />} />
           <Route path="/dashboard" element={<ProtectedRoute {...defaultProtectedRouteProps} outlet={<Dashboard />} />} />
           <Route path="/solicitacao" element={<ProtectedRoute {...defaultProtectedRouteProps} outlet={<Requisition />} />} />
-          <Route path="/profile" element={<ProtectedRoute {...defaultProtectedRouteProps} outlet={<Profile />} />} />
+          <Route path="/perfil" element={<ProtectedRoute {...defaultProtectedRouteProps} outlet={<Profile />} />} />
         </Routes>
       </userContext.Provider>
     </BrowserRouter >

@@ -48,9 +48,10 @@ model SolicitationMaterial {
   id              String @id @default(uuid())
   solicitation_id String
   material_id     String
+  amount          Float  @default(1)
 
-  solicitationMaterial_user     SolicitationUser @relation(fields: [solicitation_id], references: [id])
-  solicitationMaterial_material Material         @relation(fields: [material_id], references: [id])
+  solicitation    SolicitationUser @relation(fields: [solicitation_id], references: [id])
+  material        Material         @relation(fields: [material_id], references: [id])
 
   @@map("solicitationMaterial")
 }

@@ -42,7 +42,10 @@ interface UpdateUser {
 interface Solicitation {
     client_user_id: string;
     company_user_id: string;
-    materials: string[];
+    materials: {
+        id: string;
+        amount: string;
+    }[];
 }
 
 const api = axios.create({
@@ -130,6 +133,24 @@ export const findSolicitations = async (id: string) => {
 export const validateEmail = async (email: string) => {
     try {
         const response = await api.get<boolean>(`validateEmail/${email}`);
+        return response;
+    } catch (err: any) {
+        return err
+    }
+}
+
+export const validateCnpj = async (cnpj: string) => {
+    try {
+        const response = await api.get<boolean>(`validateCnpj/${cnpj}`);
+        return response;
+    } catch (err: any) {
+        return err
+    }
+}
+
+export const validateCpf = async (cpf: string) => {
+    try {
+        const response = await api.get<boolean>(`validateCpf/${cpf}`);
         return response;
     } catch (err: any) {
         return err

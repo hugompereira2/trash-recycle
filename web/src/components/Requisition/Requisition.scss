@@ -7,7 +7,7 @@
     h1 {
         font-size: 2rem;
         margin: 0 0 2rem 0;
-        color: #322153;
+        color: var(--purple-text);
     }
 
 
@@ -18,7 +18,7 @@
     }
 
     .collection-item-title {
-        color: #322153;
+        color: var(--purple-text);
         display: flex;
         gap: 0.9375rem 1.875rem;
         justify-content: space-between;
@@ -102,6 +102,7 @@
 .dialog-button-footer {
     display: flex;
     justify-content: space-between;
+    margin-top: 1rem;
     gap: 1rem;
     align-items: center;
 }
@@ -112,4 +113,28 @@
 
 .confirm-button {
     background: #198754;
+}
+
+.centered-row {
+    max-width: 280px;
+    align-items: center;
+    justify-content: center;
+    margin: 1.5rem auto !important;
+    gap: 1rem !important;
+}
+
+.badge {
+    width: 80px;
+    text-align: center;
+}
+
+.input-solicitation {
+    padding: 0.5rem 0.5rem;
+    border-radius: 12px;
+    max-width: 70px;
+    border: transparent;
+    color: black;
+    border: 1px solid transparent;
+    background: white;
+    font-weight: 600;
 }
