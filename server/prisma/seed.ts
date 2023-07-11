@@ -46,12 +46,12 @@ async function run() {
       }
     }),
 
-    prisma.material.create({
-      data: {
-        name: 'Organico',
-        color: '#834125',
-      }
-    }),
+    // prisma.material.create({
+    //   data: {
+    //     name: 'Organico',
+    //     color: '#834125',
+    //   }
+    // }),
 
     prisma.material.create({
       data: {
