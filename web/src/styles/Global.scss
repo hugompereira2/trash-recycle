@@ -9,8 +9,6 @@
 	--weak-white: #e9e9e9;
 	--background-color: #e5e7eb;
 
-	color: rgba(255, 255, 255, 0.87);
-
 	font-synthesis: none;
 	box-sizing: border-box;
 	text-rendering: optimizeLegibility;
@@ -187,6 +185,7 @@ h1 {
 }
 
 button {
+	color: white;
 	border-radius: 8px;
 	border: 1px solid transparent;
 	padding: 0.6em 1.2em;
