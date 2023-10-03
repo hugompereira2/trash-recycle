@@ -13,6 +13,7 @@ import iconImg from 'leaflet/dist/images/marker-icon.png';
 import { toast } from "react-toastify";
 import L from "leaflet";
 import { useTable, TableOptions, Column } from "react-table";
+import GoogleMap from '../GoogleMap/GoogleMap';
 
 interface CompanyAddress {
     cep: string;
@@ -77,7 +78,6 @@ const Dashboard = () => {
     const [material, setMaterial] = useState<solicitationMaterial[]>([]);
     const [showModal, setShowModal] = useState<boolean>(false);
     const [pfUser, setPfUser] = useState<boolean>(false);
-    const [initialPosition, setInitialPosition] = useState<[number, number]>([0, 0]);
     const [selectedPosition, setSelectedPosition] = useState<[number, number]>([0, 0]);
 
     const navigate = useNavigate();
@@ -150,7 +150,6 @@ const Dashboard = () => {
     const handleShowMap = (location: string) => {
         setShowModal(true)
 
-        setInitialPosition(prevLocation => location.split(",").map(parseFloat).slice(0, 2) as [number, number]);
         setSelectedPosition(prevLocation => location.split(",").map(parseFloat).slice(0, 2) as [number, number]);
     }
 
@@ -308,15 +307,17 @@ const Dashboard = () => {
                                             </button>
                                         </div>
                                     </div> :
-                                    <div className="map-container">
-                                        <MapContainer center={initialPosition} zoom={15}>
-                                            <TileLayer
-                                                attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-                                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                                            <Marker position={selectedPosition} icon={getMarkerIcon()} />
-                                            <LocationMarker />
-                                        </MapContainer>
-                                    </div>
+                                    // <div className="map-container">
+                                    //     <MapContainer center={initialPosition} zoom={15}>
+                                    //         <TileLayer
+                                    //             attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                                    //             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                                    //         <Marker position={selectedPosition} icon={getMarkerIcon()} />
+                                    //         <LocationMarker />
+                                    //     </MapContainer>
+                                    // </div>
+                                    // <GoogleMap center={initialPosition} position={selectedPosition} />
+                                    <GoogleMap position={selectedPosition}/>
                             }
                         </Dialog.Content>
                     </Dialog.Portal>
