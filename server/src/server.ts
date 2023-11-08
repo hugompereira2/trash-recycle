@@ -1,5 +1,6 @@
 import Fastify from "fastify";
-import cors from "@fastify/cors"
+import cors from "@fastify/cors";
+import "./jobs/solicitationJob";
 import { appRoutes } from "./routes";
 
 const app = Fastify();

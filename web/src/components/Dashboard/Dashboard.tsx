@@ -37,6 +37,7 @@ interface solicitationProps {
     client_user_id: string;
     id: string;
     created_at: string;
+    active_date: string;
     active: boolean | null;
     finalized: boolean;
     company: {
@@ -68,8 +69,9 @@ interface SolicitationData {
     col1: string;
     col2: string;
     col3: string;
-    col4: React.ReactNode;
+    col4: string;
     col5: React.ReactNode;
+    col6: React.ReactNode;
 }
 
 const Dashboard = () => {
@@ -122,6 +124,20 @@ const Dashboard = () => {
 
         return <span className={`badge ${badgeClassName}`}>{statusLabel}</span>;
     }
+
+    const handleDeadline = (solicitation: solicitationProps): string => {
+        if (solicitation.active_date) {
+            const currentDate = new Date(solicitation.active_date);
+            currentDate.setDate(currentDate.getDate() + 7);
+            const day = currentDate.getDate().toString().padStart(2, '0');
+            const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
+            const year = currentDate.getFullYear();
+            const formattedDate = `${day}/${month}/${year}`;
+            return formattedDate;
+        }
+
+        return "N/I";
+    };
 
     const handleChangeStatus = async (SolictationID: string, status: boolean) => {
 
@@ -188,8 +204,9 @@ const Dashboard = () => {
                     col1: solicitation.id,
                     col2: dateFormatted(solicitation.created_at),
                     col3: solicitation.company?.name || solicitation.client?.name,
-                    col4: handleStatus(solicitation.active, solicitation.finalized),
-                    col5: handleActions((
+                    col4: handleDeadline(solicitation),
+                    col5: handleStatus(solicitation.active, solicitation.finalized),
+                    col6: handleActions((
                         solicitation.company?.address?.location || solicitation.id),
                         solicitation.active,
                         solicitation.finalized,
@@ -225,12 +242,16 @@ const Dashboard = () => {
                 accessor: 'col3',
             },
             {
-                Header: 'Status',
+                Header: 'Prazo',
                 accessor: 'col4',
             },
             {
-                Header: 'Ações',
+                Header: 'Status',
                 accessor: 'col5',
+            },
+            {
+                Header: 'Ações',
+                accessor: 'col6',
             },
         ],
         []
@@ -317,7 +338,7 @@ const Dashboard = () => {
                                     //     </MapContainer>
                                     // </div>
                                     // <GoogleMap center={initialPosition} position={selectedPosition} />
-                                    <GoogleMap position={selectedPosition}/>
+                                    <GoogleMap position={selectedPosition} />
                             }
                         </Dialog.Content>
                     </Dialog.Portal>

@@ -345,6 +345,7 @@ export async function appRoutes(app: FastifyInstance) {
 					id: true,
 					created_at: true,
 					active: true,
+					active_date: true,
 					finalized: true,
 					company: {
 						select: {
@@ -392,6 +393,7 @@ export async function appRoutes(app: FastifyInstance) {
 							id: true,
 							created_at: true,
 							active: true,
+                            active_date: true,
 							finalized: true,
 							client: {
 								select: {
@@ -532,6 +534,7 @@ export async function appRoutes(app: FastifyInstance) {
 						finalized: true,
 					}),
 					active: changeStatusBody,
+					active_date: new Date().toISOString(),
 				},
 			});
 
